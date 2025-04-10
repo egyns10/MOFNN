@@ -1,6 +1,6 @@
 import numpy as np
 
-def splitData(data, train_size=100):
+def splitData2(data, train_size=100):
     # Extract header
     header = data[0]
     
@@ -13,7 +13,7 @@ def splitData(data, train_size=100):
 
     # Assuming the last column is the target (y) and the rest are features (X)
     X_train = train_data[:, :-1]  # All columns except the last
-    y_train = train_data[:, -1]   # Only the last column
+    y_train = train_data[:, -1]   # Only the last columns
 
     X_test = test_data[:, :-1]  # All columns except the last
     y_test = test_data[:, -1]   # Only the last column
