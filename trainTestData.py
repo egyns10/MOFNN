@@ -1,8 +1,6 @@
 import numpy as np
 
 def splitData(data, trainingSize, testingSize, feature_columns=None):
-    header = data[0]
-    
     trainData = data[:trainingSize]  #first `train_size` rows for training
     testData = data[trainingSize:trainingSize+testingSize]   #remaining rows for testing
     #this bit defines the size of the test and training data - originally states at the calling of the function
@@ -17,4 +15,4 @@ def splitData(data, trainingSize, testingSize, feature_columns=None):
     X_test = testData[:, feature_columns]
     y_test = testData[:, -1]
 
-    return header, X_train, y_train, X_test, y_test
+    return X_train, y_train, X_test, y_test
