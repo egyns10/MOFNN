@@ -1,6 +1,6 @@
 # main.py
 from preprocess import processCSVFile, removeDuplicatesFromColumns, cleanData
-from processCSV import load_csv_to_array, readCSVinNP
+from processCSV import load_csv_to_array, readCSV
 from featurise import featuriseArray
 from randomForest import doRandomForest
 from linearReg import doLinearReg
@@ -38,22 +38,22 @@ print("Original 2D Array:")
 print(clean)
 '''
 csv_file = 'mof5.csv'
-clean = readCSVinNP(csv_file)
+clean = readCSV(csv_file)
 
 featurisedData = featuriseArray(clean)
 print("\nfeaturised Data:")
 print(featurisedData)
 
 feature_columns = [1, 2]
-header, X_train, y_train, X_test, y_test = splitData(featurisedData, 100, 100, feature_columns=feature_columns)
+X_train, y_train, X_test, y_test = splitData(100, 100, feature_columns=feature_columns)
 
 #header, X_train, y_train, X_test, y_test = splitData2(featurisedData)
 
-rf_mse, rf_r2 = doRandomForest((header, X_train, y_train, X_test, y_test))
+rf_mse, rf_r2 = doRandomForest(X_train, y_train, X_test, y_test)
 print(f"\nRandom Forest Regressor - MSE: {rf_mse:.4f}, R²: {rf_r2:.4f}")
 
-gb_mse, gb_r2 = doGradBoost((header, X_train, y_train, X_test, y_test))
+gb_mse, gb_r2 = doGradBoost(X_train, y_train, X_test, y_test)
 print(f"\nGradient Boosting - MSE: {gb_mse:.4f}, R²: {gb_r2:.4f}")
 
 print("\nLinear Regression and Visualization:")
-doLinearReg((header, X_train, y_train, X_test, y_test))
+doLinearReg(X_train, y_train, X_test, y_test)

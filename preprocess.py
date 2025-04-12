@@ -1,22 +1,5 @@
 import csv
 
-def processCSVFile(filePath):
-#a CSV file and stores each line as a row, with each value separated by commas as a new item in that row
-    try:
-        with open(filePath, 'r') as file:
-            reader = csv.reader(file)
-            rows = [row for row in reader]
-            #remove null values (empty strings) from rows - original csv file has lots of ",,,,,"
-            rows = [[value.strip() for value in row if value.strip()] for row in rows]
-        return rows
-
-    except FileNotFoundError:
-        print(f"Error: File '{filePath}' not found.")
-        return []
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return []
-
 def removeDuplicatesFromColumns(data):
 #removes duplicate strings within the same column in a 2D array
 #note that it transposes data to shift cols into rows
