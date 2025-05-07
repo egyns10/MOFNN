@@ -2,7 +2,10 @@
 import numpy as np
 
 def featuriseArray(data):
-    header = data[0]  #keeps the header
+    if data is None:
+        raise ValueError("Input data is None! Provide a valid dataset.")
+    
+    header = np.array(data[0])  #keeps the header
     numericalData = np.array(data[1:], dtype=float)
     
     #normalise
