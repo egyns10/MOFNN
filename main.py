@@ -7,13 +7,12 @@ from gradBoost import doGradBoost
 #from trainTestData import splitData
 #from ttd import splitData2
 
+#------------------------------------
+
+csv_file = 'mof5.csv'
+clean = readCSV(csv_file)
+
 '''
-#filePath = input("Enter the path to the CSV file:\n")
-filePath = "/Users/nso/Local Items/Uni/Y3/BEng Project/csv files/mof_crystallographic_properties.csv"
-result = processCSVFile(filePath)
-print("Processed CSV Data:")
-for row in result[:5]:
-    print(row) 
 
 result = removeDuplicatesFromColumns(result)
 print("\nData after removing duplicates from columns:\n")
@@ -36,11 +35,9 @@ clean = load_csv_to_array(csv_file)
 print("Original 2D Array:")
 print(clean)
 '''
-csv_file = "/Users/nso/Local Items/Uni/Y3/BEng Project/csv files/mof5.csv"
-clean = readCSV(csv_file)
-print(clean)
-print("done")
 
+
+'''
 featurisedData = featuriseArray(clean)
 print("\nfeaturised Data:")
 print(featurisedData)
@@ -58,3 +55,4 @@ print(f"\nGradient Boosting - MSE: {gb_mse:.4f}, R²: {gb_r2:.4f}")
 
 print("\nLinear Regression and Visualization:")
 doLinearReg(featurisedData)
+'''

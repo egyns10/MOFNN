@@ -3,7 +3,8 @@ import csv
 import pandas as pd
 
 def readCSV(filepath):
-    pd.read_csv(filepath)
+    readData = pd.read_csv(filepath, sep=',')
+    return readData
 
 def removeDuplicatesFromColumns(data):
 #removes duplicate strings within the same column in a 2D array
