@@ -1,9 +1,13 @@
 # preprocess.py
 import csv
 import pandas as pd
+import numpy as np
 
 def readCSV(filepath):
-    readData = pd.read_csv(filepath, sep=',')
+    readData = pd.read_csv(filepath)
+    readData = readData.apply(pd.to_numeric, errors='coerce')
+    readData =readData.dropna()
+    readData =readData.select_dtypes(include=[np.number])
     return readData
 
 def removeDuplicatesFromColumns(data):

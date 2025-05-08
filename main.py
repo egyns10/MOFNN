@@ -9,19 +9,20 @@ from gradBoost import doGradBoost
 
 #------------------------------------
 
-csv_file = 'mof5.csv'
-clean = readCSV(csv_file)
-
+#csv_file = 'mof5.csv'
+csv_file = 'mof_crystallographic_properties.csv'
+readFile = readCSV(csv_file)
+print(readFile[:2])
 '''
 
-result = removeDuplicatesFromColumns(result)
+noDupFile = removeDuplicatesFromColumns(readFile)
 print("\nData after removing duplicates from columns:\n")
-for row in result[:5]:
+for row in noDupFile[:2]:
     print(row)
 
-clean = cleanData(result)
+clean = cleanData(noDupFile)
 print("\nRemoved all strings and null spaces:")
-for row in result[:5]:
+for row in clean[:2]:
     print(row)
 
 #setupTrainingData(clean)
@@ -29,11 +30,6 @@ for row in result[:5]:
 #outputPath = input("Enter the path to save the new csv file to: ")
 #debugCSVFromArray(result, outputPath)
 
-
-csv_file = 'mof5.csv'
-clean = load_csv_to_array(csv_file)
-print("Original 2D Array:")
-print(clean)
 '''
 
 
