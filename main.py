@@ -1,5 +1,5 @@
 # main.py
-from preprocess import removeDuplicatesFromColumns, cleanData, readCSV
+from preprocess import readCSV, removeDup, cleanData, saveAsCSV
 from featurise import featuriseArray
 from randomForest import doRandomForest
 from linearReg import doLinearReg
@@ -13,25 +13,15 @@ from gradBoost import doGradBoost
 csv_file = 'mof_crystallographic_properties.csv'
 readFile = readCSV(csv_file)
 print(readFile[:2])
-'''
 
-noDupFile = removeDuplicatesFromColumns(readFile)
-print("\nData after removing duplicates from columns:\n")
-for row in noDupFile[:2]:
-    print(row)
+step1 = removeDup(readFile)
+print(step1[:2])
 
-clean = cleanData(noDupFile)
-print("\nRemoved all strings and null spaces:")
-for row in clean[:2]:
-    print(row)
-
-#setupTrainingData(clean)
+step2 = cleanData(step1)
+print(step2[:2])
 
 #outputPath = input("Enter the path to save the new csv file to: ")
-#debugCSVFromArray(result, outputPath)
-
-'''
-
+#saveAsCSV(step2, outputPath)
 
 '''
 featurisedData = featuriseArray(clean)
