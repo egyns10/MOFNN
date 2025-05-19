@@ -20,10 +20,20 @@ dataCleaned = cleanData(dataNoDup)
 print(dataCleaned[:2])
 
 
-csvYN = input("Do you want to save the cleaned data as a CSV? Y/N\n")
-if csvYN == "Y" :
-    outputPath = input("Enter the path to save the new csv file to: ")
-    saveAsCSV(dataCleaned, outputPath)
+
+csvYNValid = False
+while csvYN != "Y" or csvYN != "N":
+    csvYN = input("Do you want to save the cleaned data as a CSV? Y/N\n")
+    if csvYN == "Y" :
+        csvYN = True
+        outputPath = input("Enter the path to save the new csv file to: ")
+        print("\n")
+        saveAsCSV(dataCleaned, outputPath)
+        break
+    if csvYN == "N":
+        break
+    if csvYN != "Y" or csvYN != "N":
+        print("Invalid value, try again\n")
 
 colX = -1
 colY = -1
@@ -37,10 +47,10 @@ while colNValid == False:
         colNValid = True
         break
     if colNValid == False:
-        print("Your values are invalid. Make sure they are in range.")
+        print("Your values are invalid. Make sure they are in range.\n")
 
 dataIsolated = take2Col(dataCleaned ,colX, colY)
-print("Done")
+print("Done\n")
 print(dataIsolated[:2])
 
 rf_mse, rf_r2 = doRandomForest(dataIsolated)
@@ -49,5 +59,6 @@ print(f"\nRandom Forest Regressor - MSE: {rf_mse:.4f}, R²: {rf_r2:.4f}")
 gb_mse, gb_r2 = doGradBoost(dataIsolated)
 print(f"\nGradient Boosting - MSE: {gb_mse:.4f}, R²: {gb_r2:.4f}")
 
+lr_mse, lr_r2 = doLinearReg(dataIsolated)
+print(f"\nLinear Regression = MSE {lr_mse:.4f},R²: {lr_r2:.4f}")
 print("\nLinear Regression and Visualization:")
-doLinearReg(dataIsolated)
