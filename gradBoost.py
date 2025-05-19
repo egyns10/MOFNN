@@ -11,9 +11,9 @@ def doGradBoost(data):
     y = data.iloc[:,1].values
 
     #train and tests sets made
-    X_train, X_test, y_train, y_test = train_test_split(X, y, testSize=0.3, randomState=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
-    gbr = GradientBoostingRegressor(nEstimators=50, learningRate=0.075, randomState=42)
+    gbr = GradientBoostingRegressor(n_estimators=50, learning_rate=0.075, random_state=42)
     gbr.fit(X_train, y_train)
 
     y_pred = gbr.predict(X_test)

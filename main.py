@@ -35,9 +35,9 @@ colY = input("Enter the column index for the y axis: ")
 
 #header, X_train, y_train, X_test, y_test = splitData2(featurisedData)
 
-dataIsolated = take2Col(dataCleaned[:2] ,colX, colY)
-#print("Done")
-#print(dataIsolated[:2])
+dataIsolated = take2Col(dataCleaned ,colX, colY)
+print("Done")
+print(dataIsolated[:2])
 
 rf_mse, rf_r2 = doRandomForest(dataIsolated)
 print(f"\nRandom Forest Regressor - MSE: {rf_mse:.4f}, R²: {rf_r2:.4f}")

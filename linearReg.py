@@ -12,7 +12,7 @@ def doLinearReg(data):
     y = data.iloc[:,1].values
 
     #train and tests sets made
-    X_train, X_test, y_train, y_test = train_test_split(X, y, testSize=0.3, randomState=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
     #train the model
     reg = LinearRegression()

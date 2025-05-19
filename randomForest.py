@@ -9,10 +9,11 @@ def doRandomForest(data):
     y = data.iloc[:,1].values
     #changes the pandas df into numpy array
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, testSize=0.3, randomState=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
 
     # Use RandomForestRegressor
-    reg = RandomForestRegressor(nEstimators=100, randomState=42)
+    reg = RandomForestRegressor(n_estimators=100, random_state=42)
     reg.fit(X_train, y_train)
     y_pred = reg.predict(X_test)
 
