@@ -19,3 +19,9 @@ def cleanData(data):
 
 def saveAsCSV(data, filePath):
     data.to_csv(filePath, index=False)
+
+def take2Col(data, colX, colY):
+    colX = int(colX)
+    colY = int(colY)
+    isolatedCol = data.iloc[:, [colX, colY]]
+    return isolatedCol
