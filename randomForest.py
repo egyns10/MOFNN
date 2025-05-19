@@ -5,8 +5,9 @@ from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
 
 def doRandomForest(data):
-    X = np.array(data[1:, :-1], dtype=float)
-    y = np.array(data[1:, -1], dtype=float)
+    X = data.iloc[:,0].values.reshape(-1, 1)
+    y = data.iloc[:,1].values
+    #changes the pandas df into numpy array
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, testSize=0.3, randomState=42)
 

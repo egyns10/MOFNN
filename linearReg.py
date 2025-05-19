@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 def doLinearReg(data):
     #features are stored in X
     #targets stored in y
-    X = np.array(data[1:, :-1], dtype=float)
-    y = np.array(data[1:, -1], dtype=float)
+    X = data.iloc[:,0].values.reshape(-1, 1)
+    y = data.iloc[:,1].values
 
     #train and tests sets made
     X_train, X_test, y_train, y_test = train_test_split(X, y, testSize=0.3, randomState=42)
