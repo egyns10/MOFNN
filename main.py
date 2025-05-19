@@ -1,6 +1,5 @@
 # main.py
 from preprocess import readCSV, removeDup, cleanData, saveAsCSV, take2Col
-from featurise import featuriseArray
 from randomForest import doRandomForest
 from linearReg import doLinearReg
 from gradBoost import doGradBoost
@@ -20,20 +19,25 @@ print(dataNoDup[:2])
 dataCleaned = cleanData(dataNoDup)
 print(dataCleaned[:2])
 
-#outputPath = input("Enter the path to save the new csv file to: ")
-#saveAsCSV(step2, outputPath)
 
-'''
-featurisedData = featuriseArray(dataCleaned)
-print("\nfeaturised Data:")
-print(featurisedData)
-'''
+csvYN = input("Do you want to save the cleaned data as a CSV? Y/N\n")
+if csvYN == "Y" :
+    outputPath = input("Enter the path to save the new csv file to: ")
+    saveAsCSV(dataCleaned, outputPath)
 
-colX = input("Enter the column index for the x axis: ")
-colY = input("Enter the column index for the y axis: ")
-#X_train, y_train, X_test, y_test = splitData(100, 100, feature_columns=feature_columns)
-
-#header, X_train, y_train, X_test, y_test = splitData2(featurisedData)
+colX = -1
+colY = -1
+lengthData = dataCleaned.shape[1]
+print(lengthData)
+colNValid = False
+while colNValid == False:
+    colX = int(input("Enter the column index for the x axis: "))
+    colY = int(input("Enter the column index for the y axis: "))
+    if (colX in range(0,lengthData-1)) and (colY in range(0,lengthData-1)) and (colY is not colX):
+        colNValid = True
+        break
+    if colNValid == False:
+        print("Your values are invalid. Make sure they are in range.")
 
 dataIsolated = take2Col(dataCleaned ,colX, colY)
 print("Done")
