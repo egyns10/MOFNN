@@ -7,6 +7,8 @@ import numpy as np
 def doGradBoost(data):
     #features are stored in X
     #targets stored in y
+
+    #changes the pandas df into numpy array
     X = data.iloc[:,0].values.reshape(-1, 1)
     y = data.iloc[:,1].values
 
