@@ -5,9 +5,12 @@ from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
 import matplotlib.pyplot as plt
 
-def doLinearReg(data):
+def doLinearReg(data, xTitle, yTitle):
     #features are stored in X
     #targets stored in y
+
+    #changes the pandas df into numpy array
+
     X = data.iloc[:,0].values.reshape(-1, 1)
     y = data.iloc[:,1].values
 
@@ -27,6 +30,7 @@ def doLinearReg(data):
     plt.figure(figsize=(8, 6))
     plt.scatter(y_test, y_pred, color='blue', alpha=0.6, label='Predicted vs Actual')
     plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red', linestyle='--', label='Ideal Fit')
+    plt.title(xTitle,' vs ',yTitle)
     plt.xlabel('True Values')
     plt.ylabel('Predicted Values')
     plt.title('Linear Regression: True vs Predicted Values')
