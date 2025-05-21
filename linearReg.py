@@ -26,16 +26,19 @@ def doLinearReg(data, xTitle, yTitle):
     mse = mean_squared_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
 
-        # Plot true values vs predicted values
+    '''
+    #plot true values vs predicted values
     plt.figure(figsize=(8, 6))
     plt.scatter(y_test, y_pred, color='blue', alpha=0.6, label='Predicted vs Actual')
     plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red', linestyle='--', label='Ideal Fit')
-    plt.title(xTitle,' vs ',yTitle)
+    plt.title(f"{xTitle} vs {yTitle}")
     plt.xlabel('True Values')
     plt.ylabel('Predicted Values')
-    plt.title('Linear Regression: True vs Predicted Values')
     plt.legend()
     plt.grid()
-    plt.show()
+    plt.savefig(f"/Users/nso/Desktop/BEng/{xTitle}VS{yTitle}")
+    print("Figure saved")
+    plt.show(block=True)
+    '''
 
     return mse, r2

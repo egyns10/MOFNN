@@ -1,9 +1,12 @@
 #main.py
+import pandas as pd
+import numpy as np
+
 from preprocess import readCSV, removeDup, cleanData, saveAsCSV, take2Col
 from randomForest import doRandomForest, randomTreeXGBoost
 from linearReg import doLinearReg
 from gradBoost import doGradBoost
-from getData import intoArray
+from getData import createGrid, intoArray
 
 #------------------------------------
 
@@ -33,11 +36,12 @@ while csvYN != "Y" or csvYN != "N":
 '''
 
 
-'''
+
 colX = -1
 colY = -1
 lengthData = dataCleaned.shape[1]
 print(lengthData)
+'''
 colNValid = False
 while colNValid == False:
     colX = int(input("Enter the column index for the x axis: "))
@@ -49,59 +53,75 @@ while colNValid == False:
         print("Your values are invalid. Make sure they are in range.\n")
 '''
 
-colX = [0,1,2,3,4,5,6,7]
-colY = [0,1,2,3,4,5,6,7]
+lengthData = dataCleaned.shape[1]
+grid = [['' for _ in range(lengthData+1)] for _ in range(lengthData+1)]
+gridHeaders = ["Density","GSA","VSA","Void Fraction","Pore Volume","Largest Cavity Diameter","Pore Limiting Diameter"]
 
-SKRFMSE = [["","Density","GSA","VSA","Void Fraction","Pore Volume","Largest Cavity Diameter","Pore Limiting Diameter"],["Density","x","","","","","",""],["GSA","","x","","","","",""],["VSA","","","x","","","",""], ["Void Fraction","","","","x","","",""],["Pore Volume","","","","","x","",""],["Largest Cavity Diameter","","","","","","x",""],["Pore Limiting Diameter","","","","","","","x"]]
-SKRFR2 = [["","Density","GSA","VSA","Void Fraction","Pore Volume","Largest Cavity Diameter","Pore Limiting Diameter"],["Density","x","","","","","",""],["GSA","","x","","","","",""],["VSA","","","x","","","",""], ["Void Fraction","","","","x","","",""],["Pore Volume","","","","","x","",""],["Largest Cavity Diameter","","","","","","x",""],["Pore Limiting Diameter","","","","","","","x"]]
-XGRFMSE = [["","Density","GSA","VSA","Void Fraction","Pore Volume","Largest Cavity Diameter","Pore Limiting Diameter"],["Density","x","","","","","",""],["GSA","","x","","","","",""],["VSA","","","x","","","",""], ["Void Fraction","","","","x","","",""],["Pore Volume","","","","","x","",""],["Largest Cavity Diameter","","","","","","x",""],["Pore Limiting Diameter","","","","","","","x"]]
-XGRFR2 = [["","Density","GSA","VSA","Void Fraction","Pore Volume","Largest Cavity Diameter","Pore Limiting Diameter"],["Density","x","","","","","",""],["GSA","","x","","","","",""],["VSA","","","x","","","",""], ["Void Fraction","","","","x","","",""],["Pore Volume","","","","","x","",""],["Largest Cavity Diameter","","","","","","x",""],["Pore Limiting Diameter","","","","","","","x"]]
-SKBGMSE = [["","Density","GSA","VSA","Void Fraction","Pore Volume","Largest Cavity Diameter","Pore Limiting Diameter"],["Density","x","","","","","",""],["GSA","","x","","","","",""],["VSA","","","x","","","",""], ["Void Fraction","","","","x","","",""],["Pore Volume","","","","","x","",""],["Largest Cavity Diameter","","","","","","x",""],["Pore Limiting Diameter","","","","","","","x"]]
-SKBGR2 = [["","Density","GSA","VSA","Void Fraction","Pore Volume","Largest Cavity Diameter","Pore Limiting Diameter"],["Density","x","","","","","",""],["GSA","","x","","","","",""],["VSA","","","x","","","",""], ["Void Fraction","","","","x","","",""],["Pore Volume","","","","","x","",""],["Largest Cavity Diameter","","","","","","x",""],["Pore Limiting Diameter","","","","","","","x"]]
-SKLRMSE = [["","Density","GSA","VSA","Void Fraction","Pore Volume","Largest Cavity Diameter","Pore Limiting Diameter"],["Density","x","","","","","",""],["GSA","","x","","","","",""],["VSA","","","x","","","",""], ["Void Fraction","","","","x","","",""],["Pore Volume","","","","","x","",""],["Largest Cavity Diameter","","","","","","x",""],["Pore Limiting Diameter","","","","","","","x"]]
-SKLRR2 = [["","Density","GSA","VSA","Void Fraction","Pore Volume","Largest Cavity Diameter","Pore Limiting Diameter"],["Density","x","","","","","",""],["GSA","","x","","","","",""],["VSA","","","x","","","",""], ["Void Fraction","","","","x","","",""],["Pore Volume","","","","","x","",""],["Largest Cavity Diameter","","","","","","x",""],["Pore Limiting Diameter","","","","","","","x"]]
+SKRFMSE = createGrid(gridHeaders)
+SKRFR2  = createGrid(gridHeaders)
+XGRFMSE = createGrid(gridHeaders)
+XGRFR2 = createGrid(gridHeaders)
+SKBGMSE = createGrid(gridHeaders)
+SKBGR2 = createGrid(gridHeaders)
+SKLRMSE = createGrid(gridHeaders)
+SKLRR2 = createGrid(gridHeaders)
 
-headers = dataCleaned.columns.toList()
 
-for i in colX :
-    for j in colY:
 
-        dataIsolated = take2Col(dataCleaned ,colX[i], colY[j])
+
+for i in range(1,lengthData+1):
+    for j in range(1,lengthData+1):
+
+        dataIsolated = take2Col(dataCleaned ,i-1, j-1)
 
         rf_mse, rf_r2 = doRandomForest(dataIsolated)
         print(f"\nScikit-learn | Random Forest Regressor - MSE: {rf_mse:.4f}, R²: {rf_r2:.4f}")
 
-        SKRFMSE = intoArray(SKRFMSE,i,j,rf_mse)
-        SKRFR2 = intoArray(SKRFR2,i,j,rf_r2)
+        SKRFMSE[i][j] = rf_mse
+        SKRFR2[i][j] = rf_r2
 
 
         rfxg_mse, rfxg_r2 = randomTreeXGBoost(dataIsolated)
         print(f"\nXGBoost | Random Forest Regressor - MSE: {rfxg_mse:.4f}, R²: {rfxg_r2:.4f}") 
 
-        XGRFMSE = intoArray(XGRFMSE,i,j,rfxg_mse)
-        XGRFR2 = intoArray(XGRFR2,i,j,rfxg_r2)
+        XGRFMSE[i][j] = rfxg_mse
+        XGRFR2[i][j] = rfxg_r2
 
         gb_mse, gb_r2 = doGradBoost(dataIsolated)
         print(f"\nScikit-learn | Gradient Boosting - MSE: {gb_mse:.4f}, R²: {gb_r2:.4f}")
 
-        SKBGMSE = intoArray(SKBGMSE,i,j,gb_mse)
-        SKBGR2 = intoArray(SKBGR2,i,j,gb_r2)
+        SKBGMSE[i][j] = gb_mse
+        SKBGR2[i][j] = gb_r2
 
-        lr_mse, lr_r2 = doLinearReg(dataIsolated,headers[colX],headers[colY])
+        lr_mse, lr_r2 = doLinearReg(dataIsolated,gridHeaders[i],gridHeaders[j])
         print(f"\nScikit-learn | Linear Regression = MSE {lr_mse:.4f},R²: {lr_r2:.4f}")
         print("\nScikit-learn | Linear Regression and Visualization:")
 
-        SKLRMSE = intoArray(SKLRMSE,i,j,lr_mse)
-        SKLRR2 = intoArray(SKLRR2,i,j,lr_r2)
+        SKLRMSE[i][j] = lr_mse
+        SKLRR2[i][j] = lr_r2
 
-saveAsCSV(SKRFMSE, '/Users/nso/Desktop/SKRFMSE.csv')
-saveAsCSV(SKRFR2, '/Users/nso/Desktop/SKRFR2.csv')
+        print(f"Done\nCurrent i: {i} and Current j: {j}")
 
-saveAsCSV(XGRFMSE, '/Users/nso/Desktop/XGRFMSE.csv')
-saveAsCSV(XGRFR2, '/Users/nso/Desktop/XGRFR2.csv')
+df1 = pd.DataFrame(SKRFMSE)
+saveAsCSV(df1, '/Users/nso/Desktop/SKRFMSE.csv')
 
-saveAsCSV(SKBGMSE, '/Users/nso/Desktop/SKBGMSE.csv')
-saveAsCSV(SKBGR2, '/Users/nso/Desktop/SKBGR2.csv')
+df2 = pd.DataFrame(SKRFR2)
+saveAsCSV(df2, '/Users/nso/Desktop/SKRFR2.csv')
 
-saveAsCSV(SKLRMSE, '/Users/nso/Desktop/SKLRMSE.csv')
-saveAsCSV(SKLRR2, '/Users/nso/Desktop/SKLRR2.csv')
+df3 = pd.DataFrame(XGRFMSE)
+saveAsCSV(df3, '/Users/nso/Desktop/XGRFMSE.csv')
+
+df4 = pd.DataFrame(XGRFR2)
+saveAsCSV(df4, '/Users/nso/Desktop/XGRFR2.csv')
+
+df5 = pd.DataFrame(SKBGMSE)
+saveAsCSV(df5, '/Users/nso/Desktop/SKBGMSE.csv')
+
+df6 = pd.DataFrame(SKBGR2)
+saveAsCSV(df6, '/Users/nso/Desktop/SKBGR2.csv')
+
+df7 = pd.DataFrame(SKLRMSE)
+saveAsCSV(df7, '/Users/nso/Desktop/SKLRMSE.csv')
+
+df8 = pd.DataFrame(SKLRR2)
+saveAsCSV(df8, '/Users/nso/Desktop/SKLRR2.csv')
