@@ -2,58 +2,44 @@
 import pandas as pd
 import numpy as np
 
-from preprocess import readCSV, removeDup, cleanData, saveAsCSV, take2Col
+from preprocess import readCSV, removeDup, cleanData, saveAsCSV, isolateCols#, take2Col, extractColumn
 from randomForest import doRandomForest, randomTreeXGBoost
 from linearReg import doLinearReg
 from gradBoost import doGradBoost
 from getData import createGrid, intoArray
+from validate import csvValidate, columnChoose
 
 #------------------------------------
 
-#csv_file = 'mof5.csv'
-csv_file = 'mof_crystallographic_properties.csv'
-readFile = readCSV(csv_file)
+filepath = 'h2_capacity_gcmc.csv'
+propertiesReadFile = readCSV(filepath)
+propertiesNoDup = removeDup(propertiesReadFile)
+propertiesClean = cleanData(propertiesNoDup)
+propertiesIsolated = isolateCols(propertiesClean,0,6)
+#save as csv? + validate
+csvValidate(propertiesClean)
+print(propertiesIsolated[:2])
 
-dataNoDup = removeDup(readFile)
+gcmcReadFile = readCSV(filepath)
+gcmcNoDup = removeDup(gcmcReadFile)
+gcmcClean = cleanData(gcmcNoDup)
+gcmcUGIsolated = isolateCols(gcmcClean,7,"null")
+gcmcUVIsolated = isolateCols(gcmcClean,8,"null")
 
-dataCleaned = cleanData(dataNoDup)
+print(gcmcUGIsolated[:2])
+#gcmcUG = extractColumn(gcmcClean,'UG at PS ')
+#gcmcUV = extractColumn(gcmcClean,'UV at PS ')
+
+
+gb_mse, gb_r2 = doGradBoost(propertiesClean.iloc[:,[1,2]],gcmcUGIsolated)
+#gb_mse, gb_r2 = doGradBoost(propertiesClean[1],propertiesClean[2],gcmcUG)
+print(f"\nScikit-learn | Gradient Boosting - MSE: {gb_mse:.4f}, R²: {gb_r2:.4f}")
 
 '''
-csvYN = "placeholder"
-csvYNValid = False
-while csvYN != "Y" or csvYN != "N":
-    csvYN = input("Do you want to save the cleaned data as a CSV? Y/N\n")
-    if csvYN == "Y" :
-        csvYN = True
-        outputPath = input("Enter the path to save the new csv file to: ")
-        print("\n")
-        saveAsCSV(dataCleaned, outputPath)
-        break
-    if csvYN == "N":
-        break
-    if csvYN != "Y" or csvYN != "N":
-        print("Invalid value, try again\n")
-'''
+#choose properties to use + validate
+columnChoose(propertiesClean)
 
-
-
-colX = -1
-colY = -1
-lengthData = dataCleaned.shape[1]
-print(lengthData)
-'''
-colNValid = False
-while colNValid == False:
-    colX = int(input("Enter the column index for the x axis: "))
-    colY = int(input("Enter the column index for the y axis: "))
-    if (colX in range(0,lengthData-1)) and (colY in range(0,lengthData-1)) and (colY != colX):
-        colNValid = True
-        break
-    if colNValid == False:
-        print("Your values are invalid. Make sure they are in range.\n")
-'''
-
-lengthData = dataCleaned.shape[1]
+lengthData = propertiesClean.shape[1]
 grid = [['' for _ in range(lengthData+1)] for _ in range(lengthData+1)]
 gridHeaders = ["Density","GSA","VSA","Void Fraction","Pore Volume","Largest Cavity Diameter","Pore Limiting Diameter"]
 
@@ -65,8 +51,6 @@ SKBGMSE = createGrid(gridHeaders)
 SKBGR2 = createGrid(gridHeaders)
 SKLRMSE = createGrid(gridHeaders)
 SKLRR2 = createGrid(gridHeaders)
-
-
 
 
 for i in range(1,lengthData+1):
@@ -125,3 +109,4 @@ saveAsCSV(df7, '/Users/nso/Desktop/SKLRMSE.csv')
 
 df8 = pd.DataFrame(SKLRR2)
 saveAsCSV(df8, '/Users/nso/Desktop/SKLRR2.csv')
+'''
