@@ -2,7 +2,7 @@
 import pandas as pd
 import numpy as np
 
-from preprocess import readCSV, removeDup, cleanData, saveAsCSV, isolateCols#, take2Col, extractColumn
+from preprocess import readCSV, removeDup, cleanData, saveAsCSV, isolateCols
 from randomForest import doRandomForest, randomTreeXGBoost
 from linearReg import doLinearReg
 from gradBoost import doGradBoost
@@ -27,19 +27,17 @@ gcmcUGIsolated = isolateCols(gcmcClean,7,"null")
 gcmcUVIsolated = isolateCols(gcmcClean,8,"null")
 
 print(gcmcUGIsolated[:2])
-#gcmcUG = extractColumn(gcmcClean,'UG at PS ')
-#gcmcUV = extractColumn(gcmcClean,'UV at PS ')
 
-
+'''
 gb_mse, gb_r2 = doGradBoost(propertiesClean.iloc[:,[1,2]],gcmcUGIsolated)
 #gb_mse, gb_r2 = doGradBoost(propertiesClean[1],propertiesClean[2],gcmcUG)
 print(f"\nScikit-learn | Gradient Boosting - MSE: {gb_mse:.4f}, R²: {gb_r2:.4f}")
+'''
+lengthData = propertiesClean.shape[1]
+#choose properties to use + validate
+features, max = columnChoose(propertiesClean)
 
 '''
-#choose properties to use + validate
-columnChoose(propertiesClean)
-
-lengthData = propertiesClean.shape[1]
 grid = [['' for _ in range(lengthData+1)] for _ in range(lengthData+1)]
 gridHeaders = ["Density","GSA","VSA","Void Fraction","Pore Volume","Largest Cavity Diameter","Pore Limiting Diameter"]
 
@@ -56,7 +54,7 @@ SKLRR2 = createGrid(gridHeaders)
 for i in range(1,lengthData+1):
     for j in range(1,lengthData+1):
 
-        dataIsolated = take2Col(dataCleaned ,i-1, j-1)
+        dataIsolated = isolateCols(propertiesClean ,i-1, j-1)
 
         rf_mse, rf_r2 = doRandomForest(dataIsolated)
         print(f"\nScikit-learn | Random Forest Regressor - MSE: {rf_mse:.4f}, R²: {rf_r2:.4f}")

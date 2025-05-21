@@ -1,5 +1,6 @@
 #validate.py
 from preprocess import saveAsCSV
+import pandas as pd
 
 def csvValidate(data):
     csvYN = "placeholder"
@@ -17,18 +18,25 @@ def csvValidate(data):
         if csvYN != "Y" or csvYN != "N":
             print("Invalid value, try again\n")
 
-
 def columnChoose(data):
-    colX = -1
-    colY = -1
     lengthData = data.shape[1]
-
     colNValid = False
+
     while colNValid == False:
-        colX = int(input("Enter the column index for the x axis: "))
-        colY = int(input("Enter the column index for the y axis: "))
-        if (colX in range(0,lengthData-1)) and (colY in range(0,lengthData-1)) and (colY != colX):
+        max = int(input("How many properties would you like to use? "))
+        if 0<max<=lengthData :
             colNValid = True
-            break
-        if colNValid == False:
-            print("Your values are invalid. Make sure they are in range.\n")
+            array = pd.DataFrame([[None]*max], columns=range(max))
+            print(array)
+
+            for i in range(0,max) :
+                property = input("What property do you want to use? (Please use exact name as used in the given csv file.) ")
+                if property not in data.columns:
+                    print(f"'{property}' is not a valid column name. Try again.\n")
+                    return columnChoose(data)  #restart
+                array.at[0, i] = property
+            return array, max
+        
+        else :
+            print("Your value is invalid. Make sure it is in range.\n")
+            return columnChoose(data)  #restart
