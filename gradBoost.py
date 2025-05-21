@@ -4,13 +4,13 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
 
-def doGradBoost(data):
+def doGradBoost(data,true):
     #features are stored in X
     #targets stored in y
 
     #changes the pandas df into numpy array
-    X = data.iloc[:,0].values.reshape(-1, 1)
-    y = data.iloc[:,1].values
+    X = data.to_numpy() 
+    y = true.iloc[:, 0].to_numpy().ravel()
 
     #train and tests sets made
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)

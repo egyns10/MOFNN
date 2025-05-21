@@ -5,9 +5,9 @@ from sklearn.metrics import mean_squared_error, r2_score
 import xgboost as xgb
 import numpy as np
 
-def doRandomForest(data):
-    X = data.iloc[:,0].values.reshape(-1, 1)
-    y = data.iloc[:,1].values
+def doRandomForest(data,true):
+    X = data.to_numpy() 
+    y = true.iloc[:, 0].to_numpy().ravel()
     #changes the pandas df into numpy array
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
@@ -23,18 +23,19 @@ def doRandomForest(data):
     return mse, r2
 
 
-def randomTreeXGBoost(data):
-    X = data.iloc[:,0].values.reshape(-1, 1)
-    y = data.iloc[:,1].values
-    # Split data
+def randomTreeXGBoost(data,true):
+    X = data.to_numpy() 
+    y = true.iloc[:, 0].to_numpy().ravel()
+
+    #split data
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
     
     model = xgb.XGBRegressor(
         max_depth=6,
         colsample_bytree=0.5,
         subsample=0.5,
-        n_estimators=1,               # Only one tree
-        learning_rate=1.0,            # No boosting, full fit in one go
+        n_estimators=1,               #only one tree
+        learning_rate=1.0,            #no boosting, full fit in one go
         random_state=42
         )
     model.fit(X_train, y_train)
