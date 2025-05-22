@@ -28,9 +28,9 @@ def createGrid(features,names,results):
         grid[i + 1][0] = cols
 
     df = pd.DataFrame(grid)
-    return df
+    return df,title
 
-def intoArray(array,i,j,n):     
+def intoArray(array,i,j,value):     
     #if arrayMSE[i+1,j+1] != "x":
-    array[:,(i+1,j+1)] = n
+    array[:,(i+1,j+1)] = value
     return array

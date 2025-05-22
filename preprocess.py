@@ -16,7 +16,6 @@ def cleanData(data):
     noNull = noString.dropna(axis=1, how='all').reset_index(drop=True)
     return noNull
 
-
 def saveAsCSV(data, filePath):
     data.to_csv(filePath, index=False)
 

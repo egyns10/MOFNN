@@ -5,7 +5,8 @@ from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
 import matplotlib.pyplot as plt
 
-def doLinearReg(data, true, xTitle, yTitle):
+#def doLinearReg(data, true, xTitle, yTitle):
+def doLinearReg(data, true, properties):
     #features are stored in X
     #targets stored in y
 
@@ -26,19 +27,17 @@ def doLinearReg(data, true, xTitle, yTitle):
     mse = mean_squared_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
 
-    '''
     #plot true values vs predicted values
     plt.figure(figsize=(8, 6))
     plt.scatter(y_test, y_pred, color='blue', alpha=0.6, label='Predicted vs Actual')
     plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red', linestyle='--', label='Ideal Fit')
-    plt.title(f"{xTitle} vs {yTitle}")
+    plt.title("Predicted vs True Values")
     plt.xlabel('True Values')
     plt.ylabel('Predicted Values')
     plt.legend()
     plt.grid()
-    plt.savefig(f"/Users/nso/Desktop/BEng/{xTitle}VS{yTitle}")
+    #plt.savefig(f"/Users/nso/Desktop/BEng/{xTitle}VS{yTitle}")
+    plt.savefig(f"/Users/nso/Desktop/BEng/{properties}")
     print("Figure saved")
-    plt.show(block=True)
-    '''
 
     return mse, r2
