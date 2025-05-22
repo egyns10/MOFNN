@@ -40,3 +40,14 @@ def columnChoose(data):
         else :
             print("Your value is invalid. Make sure it is in range.\n")
             return columnChoose(data)  #restart
+        
+def UGorUV(UG,UV):
+    choice = input("UG or UV? ")
+    if choice != "UG" and choice != "UV" :
+        print(f"'{choice}' is not a valid column name. Try again.\n")
+        return UGorUV(UG,UV)  #restart
+    
+    if choice == "UG" :
+        return UG
+    if choice == "UV" :
+        return UV
