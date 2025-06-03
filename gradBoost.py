@@ -2,7 +2,6 @@
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
-import numpy as np
 
 def doGradBoost(data,true):
     #features are stored in X

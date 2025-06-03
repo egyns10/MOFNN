@@ -1,12 +1,11 @@
 #main.py
 import pandas as pd
-import numpy as np
 
 from preprocess import readCSV, removeDup, cleanData, saveAsCSV, isolateCols
 from randomForest import doRandomForest, randomTreeXGBoost
 from linearReg import doLinearReg
 from gradBoost import doGradBoost
-from getData import createGrid, intoArray, filterCol
+from getData import createGrid, filterCol
 from validate import csvValidate, columnChoose, UGorUV
 
 #------------------------------------
@@ -16,7 +15,7 @@ filepath = 'h2_capacity_gcmc.csv'
 propertiesReadFile = readCSV(filepath)
 propertiesNoDup = removeDup(propertiesReadFile)
 propertiesClean = cleanData(propertiesNoDup)
-propertiesIsolated = isolateCols(propertiesClean,0,6) #takes out only the properties and nothing else
+propertiesIsolated = isolateCols(propertiesClean,0,6) #takes out only the properties and nothing else - hard coded.
 #save as csv? + validate
 csvValidate(propertiesClean)
 print(propertiesIsolated[:2])
@@ -30,6 +29,7 @@ gcmcUVIsolated = isolateCols(gcmcClean,8,"null")
 print(gcmcUGIsolated[:2])
 
 #all the above is now in pd.df form
+
 
 #choose properties to use + validate
 features, max = columnChoose(propertiesClean)
@@ -77,3 +77,11 @@ collectedData.iat[4,1] = lr_mse
 collectedData.iat[4,2] = lr_r2
 
 saveAsCSV(collectedData,f'/Users/nso/Desktop/{propertyStr}.csv')
+
+
+
+
+#TODO: write a program to automate the algorithms for all property combinations excluding doubles.
+#This includes putting in all combinations into the how many properties bit - probably set up some sort of array that matches the headers?
+#loop?
+#TODO: branch off and write it.
