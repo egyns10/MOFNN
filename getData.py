@@ -30,7 +30,11 @@ def createGrid(features,names,results):
     df = pd.DataFrame(grid)
     return df,title
 
-def intoArray(array,i,j,value):     
-    #if arrayMSE[i+1,j+1] != "x":
-    array[:,(i+1,j+1)] = value
-    return array
+def filterCol(reqData, data):
+    # Get the list of desired column names from name_df (assumes they are in the first row)
+    neededCol = reqData.iloc[0].tolist()
+    
+    # Filter the columns of the data_df based on those names
+    gotCol = data.loc[:, data.columns.isin(neededCol)]
+    
+    return gotCol

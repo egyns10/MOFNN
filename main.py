@@ -6,7 +6,7 @@ from preprocess import readCSV, removeDup, cleanData, saveAsCSV, isolateCols
 from randomForest import doRandomForest, randomTreeXGBoost
 from linearReg import doLinearReg
 from gradBoost import doGradBoost
-from getData import createGrid, intoArray
+from getData import createGrid, intoArray, filterCol
 from validate import csvValidate, columnChoose, UGorUV
 
 #------------------------------------
@@ -16,7 +16,7 @@ filepath = 'h2_capacity_gcmc.csv'
 propertiesReadFile = readCSV(filepath)
 propertiesNoDup = removeDup(propertiesReadFile)
 propertiesClean = cleanData(propertiesNoDup)
-propertiesIsolated = isolateCols(propertiesClean,0,6)
+propertiesIsolated = isolateCols(propertiesClean,0,6) #takes out only the properties and nothing else
 #save as csv? + validate
 csvValidate(propertiesClean)
 print(propertiesIsolated[:2])
@@ -29,6 +29,7 @@ gcmcUGIsolated = isolateCols(gcmcClean,7,"null")
 gcmcUVIsolated = isolateCols(gcmcClean,8,"null")
 print(gcmcUGIsolated[:2])
 
+#all the above is now in pd.df form
 
 #choose properties to use + validate
 features, max = columnChoose(propertiesClean)
@@ -45,37 +46,26 @@ namesAccuracy = ['MSE','R²']
 dfNamesAccuracy = pd.DataFrame(data=namesAccuracy)
 collectedData, propertyStr = createGrid(features,dfNamesML, dfNamesAccuracy)
 #print(collectedData)
+#this sets up a blank pd.df to input the r^2 and mse values fpr data collection
+
+filteredData = filterCol(features, propertiesIsolated)
+print(filteredData[:2])
 
 
-#grid = [['' for _ in range(lengthData+1)] for _ in range(lengthData+1)]
-#gridHeaders = ["Density","GSA","VSA","Void Fraction","Pore Volume","Largest Cavity Diameter","Pore Limiting Diameter"]
-#print(grid)
-
-#THIS IS AN EXAMPLE - not done properly since the [1,2] is hard coded in.
-gb_mse, gb_r2 = doGradBoost(propertiesClean.iloc[:,[1,2]],gcmcUGIsolated)
-#gb_mse, gb_r2 = doGradBoost(propertiesClean[1],propertiesClean[2],gcmcUG)
-
-#TODO: change algorithm call to include multiple properties!!!! - see above for example
-dataIsolated = isolateCols(propertiesClean ,features)
-
-rf_mse, rf_r2 = doRandomForest(dataIsolated, trueValue)
+rf_mse, rf_r2 = doRandomForest(filteredData, trueValue)
 print(f"\nScikit-learn | Random Forest Regressor - MSE: {rf_mse:.4f}, R²: {rf_r2:.4f}")
 
-intoArray(collectedData,1,1,rf_mse)
 
-
-rfxg_mse, rfxg_r2 = randomTreeXGBoost(dataIsolated, trueValue)
+rfxg_mse, rfxg_r2 = randomTreeXGBoost(filteredData, trueValue)
 print(f"\nXGBoost | Random Forest Regressor - MSE: {rfxg_mse:.4f}, R²: {rfxg_r2:.4f}") 
 
 
-gb_mse, gb_r2 = doGradBoost(dataIsolated, trueValue)
+gb_mse, gb_r2 = doGradBoost(filteredData, trueValue)
 print(f"\nScikit-learn | Gradient Boosting - MSE: {gb_mse:.4f}, R²: {gb_r2:.4f}")
 
 
-#lr_mse, lr_r2 = doLinearReg(dataIsolated, trueValue, gridHeaders[i], gridHeaders[j])
-lr_mse, lr_r2 = doLinearReg(dataIsolated, trueValue, propertyStr)
+lr_mse, lr_r2 = doLinearReg(filteredData, trueValue, propertyStr)
 print(f"\nScikit-learn | Linear Regression = MSE {lr_mse:.4f},R²: {lr_r2:.4f}")
-print("\nScikit-learn | Linear Regression and Visualization:")
 
 collectedData.iat[1,1] = rf_mse
 collectedData.iat[1,2] = rf_r2
