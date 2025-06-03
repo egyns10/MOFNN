@@ -7,6 +7,7 @@ from linearReg import doLinearReg
 from gradBoost import doGradBoost
 from getData import createGrid, filterCol
 from validate import csvValidate, columnChoose, UGorUV
+from itertools import combinations
 
 #------------------------------------
 
@@ -37,6 +38,70 @@ features, max = columnChoose(propertiesClean)
 
 #user chooses on UG or UV
 trueValue = UGorUV(gcmcUGIsolated,gcmcUVIsolated)
+
+
+#-----------------------------------
+
+
+# Set up models and results logging
+ml_functions = [
+    ('SK_RF', doRandomForest),
+    ('XG_RF', randomTreeXGBoost),
+    ('SK_GB', doGradBoost),
+    ('SK_LR', doLinearReg),
+]
+namesAccuracy = ['MSE', 'R²']
+summary_results = pd.DataFrame(columns=['Features', 'Model', 'MSE', 'R²'])
+
+# Clean headers
+features.columns = features.columns.map(str).str.strip()
+headers = list(features.columns)
+
+# Loop through all combinations from 1 to len(headers)
+for r in range(1, len(headers) + 1):
+    for combo in combinations(headers, r):
+        try:
+            # Subset DataFrame to selected features
+            featureSubset = features[list(combo)]
+            filteredData = filterCol(featureSubset, propertiesIsolated)
+
+            # Create model grid
+            collectedData, propertyStr = createGrid(
+                featureSubset,
+                pd.DataFrame([f[0] for f in ml_functions]),
+                pd.DataFrame(namesAccuracy)
+            )
+
+            print(f"\n--- Running models for features: {', '.join(combo)} ---")
+
+            # Run each model
+            for modelName, modelFunc in ml_functions:
+                if modelName == 'SK_LR':
+                    mse, r2 = modelFunc(filteredData, trueValue, propertyStr)
+                else:
+                    mse, r2 = modelFunc(filteredData, trueValue)
+
+                print(f"{modelName} - MSE: {mse:.4f}, R²: {r2:.4f}")
+
+                summary_results = pd.concat([
+                    summary_results,
+                    pd.DataFrame([{
+                        'Features': ', '.join(combo),
+                        'Model': modelName,
+                        'MSE': mse,
+                        'R²': r2
+                    }])
+                ], ignore_index=True)
+
+        except KeyError as e:
+            print(f"Skipping combo {combo} due to missing column: {e}")
+        except Exception as e:
+            print(f"Error running combo {combo}: {e}")
+
+# Save summary at the end
+summary_results.to_csv('/Users/nso/Desktop/summary_results.csv', index=False)
+print("Summary saved")
+'''
 
 #setup for easy data collection
 #TODO: Change this if the calculated accuracy values or the no. of algorithms are altered!
@@ -77,11 +142,4 @@ collectedData.iat[4,1] = lr_mse
 collectedData.iat[4,2] = lr_r2
 
 saveAsCSV(collectedData,f'/Users/nso/Desktop/{propertyStr}.csv')
-
-
-
-
-#TODO: write a program to automate the algorithms for all property combinations excluding doubles.
-#This includes putting in all combinations into the how many properties bit - probably set up some sort of array that matches the headers?
-#loop?
-#TODO: branch off and write it.
+'''
