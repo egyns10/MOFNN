@@ -7,7 +7,7 @@ from linearReg import doLinearReg
 from gradBoost import doGradBoost
 from getData import createGrid, filterCol
 from validate import csvValidate, columnChoose, UGorUV
-from hyperparameters import optimiseRF
+from hyperparameters import optimiseRF, optimiseGB, optimiseXGrf
 
 #------------------------------------
 
@@ -52,27 +52,28 @@ collectedData, propertyStr = createGrid(features,dfNamesML, dfNamesAccuracy)
 filteredData = filterCol(features, propertiesIsolated)
 print(filteredData[:2])
 
-#space here for optimising hyperparameters
-
+#optimising hyperparameters
 bestRFPara, bestRFScore = optimiseRF(filteredData, trueValue)
 print("Best RF Params: ", bestRFPara)
-print("Best CV RMSE: ", bestRFScore)
+print("Best RF RMSE: ", bestRFScore)
 
+bestGBPara, bestGBScore = optimiseGB(filteredData, trueValue)
+print("Best GB Params: ", bestGBPara)
+print("Best GB RMSE: ", bestGBScore)
 
+bestXGrfPara, bestXGrfScore = optimiseXGrf(filteredData, trueValue)
+print("Best XG RF Params: ", bestXGrfPara)
+print("Best XG RF RMSE: ", bestXGrfScore)
 
-
-
+#run algorithms
 rf_mse, rf_r2 = doRandomForest(filteredData, trueValue, **bestRFPara)
 print(f"\nScikit-learn | Random Forest Regressor - MSE: {rf_mse:.4f}, R²: {rf_r2:.4f}")
 
-
-rfxg_mse, rfxg_r2 = randomTreeXGBoost(filteredData, trueValue)
+rfxg_mse, rfxg_r2 = randomTreeXGBoost(filteredData, trueValue, bestXGrfPara)
 print(f"\nXGBoost | Random Forest Regressor - MSE: {rfxg_mse:.4f}, R²: {rfxg_r2:.4f}") 
 
-
-gb_mse, gb_r2 = doGradBoost(filteredData, trueValue)
+gb_mse, gb_r2 = doGradBoost(filteredData, trueValue, **bestGBPara)
 print(f"\nScikit-learn | Gradient Boosting - MSE: {gb_mse:.4f}, R²: {gb_r2:.4f}")
-
 
 lr_mse, lr_r2 = doLinearReg(filteredData, trueValue, propertyStr)
 print(f"\nScikit-learn | Linear Regression = MSE {lr_mse:.4f},R²: {lr_r2:.4f}")

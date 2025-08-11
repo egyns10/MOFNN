@@ -3,7 +3,7 @@ from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 
-def doGradBoost(data,true):
+def doGradBoost(data,true,**gbParams):
     #features are stored in X
     #targets stored in y
 
@@ -14,7 +14,7 @@ def doGradBoost(data,true):
     #train and tests sets made
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
-    gbr = GradientBoostingRegressor(n_estimators=50, learning_rate=0.075, random_state=42)
+    gbr = GradientBoostingRegressor(random_state=42, **gbParams)
     gbr.fit(X_train, y_train)
 
     y_pred = gbr.predict(X_test)

@@ -22,7 +22,7 @@ def doRandomForest(data, true, **rfParams):
     return mse, r2
 
 
-def randomTreeXGBoost(data,true):
+def randomTreeXGBoost(data,true, XGrfPara):
     X = data.to_numpy() 
     y = true.iloc[:, 0].to_numpy().ravel()
 
@@ -30,12 +30,14 @@ def randomTreeXGBoost(data,true):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
     
     model = xgb.XGBRegressor(
-        max_depth=6,
-        colsample_bytree=0.5,
-        subsample=0.5,
-        n_estimators=1,     #only one tree
-        learning_rate=1.0,  #no boosting, full fit in one go
-        random_state=42
+        n_estimators=1,
+        learning_rate=XGrfPara.get('learning_rate', 1.0),
+        max_depth=XGrfPara.get('max_depth', 6),
+        colsample_bytree=XGrfPara.get('colsample_bytree', 0.5),
+        subsample=XGrfPara.get('subsample', 0.5),
+        random_state=42,
+        booster='gbtree',
+        objective='reg:squarederror'
         )
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
