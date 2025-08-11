@@ -52,14 +52,15 @@ collectedData, propertyStr = createGrid(features,dfNamesML, dfNamesAccuracy)
 filteredData = filterCol(features, propertiesIsolated)
 print(filteredData[:2])
 
+bestGBPara, bestGBScore = optimiseGB(filteredData, trueValue)
+print("Best GB Params: ", bestGBPara)
+print("Best GB RMSE: ", bestGBScore)
+
+'''
 #optimising hyperparameters
 bestRFPara, bestRFScore = optimiseRF(filteredData, trueValue)
 print("Best RF Params: ", bestRFPara)
 print("Best RF RMSE: ", bestRFScore)
-
-bestGBPara, bestGBScore = optimiseGB(filteredData, trueValue)
-print("Best GB Params: ", bestGBPara)
-print("Best GB RMSE: ", bestGBScore)
 
 bestXGrfPara, bestXGrfScore = optimiseXGrf(filteredData, trueValue)
 print("Best XG RF Params: ", bestXGrfPara)
@@ -71,13 +72,13 @@ print(f"\nScikit-learn | Random Forest Regressor - MSE: {rf_mse:.4f}, R²: {rf_r
 
 rfxg_mse, rfxg_r2 = randomTreeXGBoost(filteredData, trueValue, bestXGrfPara)
 print(f"\nXGBoost | Random Forest Regressor - MSE: {rfxg_mse:.4f}, R²: {rfxg_r2:.4f}") 
-
-gb_mse, gb_r2 = doGradBoost(filteredData, trueValue, **bestGBPara)
+'''
+gb_mse, gb_r2 = doGradBoost(filteredData, trueValue, bestGBPara)
 print(f"\nScikit-learn | Gradient Boosting - MSE: {gb_mse:.4f}, R²: {gb_r2:.4f}")
 
 lr_mse, lr_r2 = doLinearReg(filteredData, trueValue, propertyStr)
 print(f"\nScikit-learn | Linear Regression = MSE {lr_mse:.4f},R²: {lr_r2:.4f}")
-
+'''
 collectedData.iat[1,1] = rf_mse
 collectedData.iat[1,2] = rf_r2
 collectedData.iat[2,1] = rfxg_mse
@@ -88,3 +89,4 @@ collectedData.iat[4,1] = lr_mse
 collectedData.iat[4,2] = lr_r2
 
 saveAsCSV(collectedData,f'/Users/nso/Desktop/{propertyStr}.csv')
+'''

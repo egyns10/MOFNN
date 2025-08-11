@@ -29,7 +29,7 @@ def optimiseGB(data, true):
         cv=5, scoring='neg_mean_squared_error', n_jobs=-1)
     gridSearch.fit(X_train, y_train)
 
-    bestGBPara = gridSearch.best_estimator_
+    bestGBPara = gridSearch.best_params_
     bestGBScore = np.sqrt(-gridSearch.best_score_)
 
     return bestGBPara, bestGBScore
