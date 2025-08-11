@@ -7,6 +7,7 @@ from linearReg import doLinearReg
 from gradBoost import doGradBoost
 from getData import createGrid, filterCol
 from validate import csvValidate, columnChoose, UGorUV
+from hyperparameters import optimiseRF
 
 #------------------------------------
 
@@ -51,8 +52,17 @@ collectedData, propertyStr = createGrid(features,dfNamesML, dfNamesAccuracy)
 filteredData = filterCol(features, propertiesIsolated)
 print(filteredData[:2])
 
+#space here for optimising hyperparameters
 
-rf_mse, rf_r2 = doRandomForest(filteredData, trueValue)
+bestRFPara, bestRFScore = optimiseRF(filteredData, trueValue)
+print("Best RF Params: ", bestRFPara)
+print("Best CV RMSE: ", bestRFScore)
+
+
+
+
+
+rf_mse, rf_r2 = doRandomForest(filteredData, trueValue, **bestRFPara)
 print(f"\nScikit-learn | Random Forest Regressor - MSE: {rf_mse:.4f}, R²: {rf_r2:.4f}")
 
 
@@ -77,11 +87,3 @@ collectedData.iat[4,1] = lr_mse
 collectedData.iat[4,2] = lr_r2
 
 saveAsCSV(collectedData,f'/Users/nso/Desktop/{propertyStr}.csv')
-
-
-
-
-#TODO: write a program to automate the algorithms for all property combinations excluding doubles.
-#This includes putting in all combinations into the how many properties bit - probably set up some sort of array that matches the headers?
-#loop?
-#TODO: branch off and write it.
