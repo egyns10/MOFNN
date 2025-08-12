@@ -1,11 +1,13 @@
 #main.py
 import pandas as pd
+from itertools import combinations
+from tqdm import tqdm
 
 from preprocess import readCSV, removeDup, cleanData, saveAsCSV, isolateCols
 from randomForest import doRandomForest, randomTreeXGBoost
 from linearReg import doLinearReg
 from gradBoost import doGradBoost
-from getData import createGrid, filterCol
+from getData import createGrid, filterCol, getParas, saveParas
 from validate import csvValidate, columnChoose, UGorUV
 from hyperparameters import optimiseRF, optimiseGB, optimiseXGrf
 
@@ -39,54 +41,88 @@ features, max = columnChoose(propertiesClean)
 #user chooses on UG or UV
 trueValue = UGorUV(gcmcUGIsolated,gcmcUVIsolated)
 
-#setup for easy data collection
-#TODO: Change this if the calculated accuracy values or the no. of algorithms are altered!
-namesML = ['SK_RF','XG_RF','SK_GB','SK_LR']
-dfNamesML = pd.DataFrame(data=namesML)
-namesAccuracy = ['MSE','R²']
-dfNamesAccuracy = pd.DataFrame(data=namesAccuracy)
-collectedData, propertyStr = createGrid(features,dfNamesML, dfNamesAccuracy)
-#print(collectedData)
-#this sets up a blank pd.df to input the r^2 and mse values fpr data collection
+#--------------------------
 
-filteredData = filterCol(features, propertiesIsolated)
-print(filteredData[:2])
+#initialising set up
+ml_functions = [
+    ('SK_RF', doRandomForest, optimiseRF),
+    ('XG_RF', randomTreeXGBoost, optimiseXGrf),
+    ('SK_GB', doGradBoost, optimiseGB),
+    ('SK_LR', doLinearReg, None),           #linear regression does not have any hyperparameters to be tuned.
+]
+namesAccuracy = ['MSE', 'R²']
+summary_results = pd.DataFrame(columns=['Features', 'Model', 'MSE', 'R²'])
 
-bestGBPara, bestGBScore = optimiseGB(filteredData, trueValue)
-print("Best GB Params: ", bestGBPara)
-print("Best GB RMSE: ", bestGBScore)
+#headers
+features.columns = features.columns.map(str).str.strip()
+#headers = list(features.columns)
+headers = features.iloc[:, 0].dropna().astype(str).str.strip().tolist()
 
-'''
-#optimising hyperparameters
-bestRFPara, bestRFScore = optimiseRF(filteredData, trueValue)
-print("Best RF Params: ", bestRFPara)
-print("Best RF RMSE: ", bestRFScore)
 
-bestXGrfPara, bestXGrfScore = optimiseXGrf(filteredData, trueValue)
-print("Best XG RF Params: ", bestXGrfPara)
-print("Best XG RF RMSE: ", bestXGrfScore)
+#start of the big loop
+#added tqdm for progress and sanity checks
+for r_index, r in enumerate(range(1, len(headers) + 1), start=1):
+    for combo in tqdm(list(combinations(headers, r)), desc=f"Feature combos of size {r}"):
+        try:
+            comboID = ','.join(combo)
+            print(f"\n-!!!- Running models for features: {comboID} -!!!-")
 
-#run algorithms
-rf_mse, rf_r2 = doRandomForest(filteredData, trueValue, **bestRFPara)
-print(f"\nScikit-learn | Random Forest Regressor - MSE: {rf_mse:.4f}, R²: {rf_r2:.4f}")
+            #subset DataFrame to selected features
+            featureSubset = features[list(combo)]
+            filteredData = filterCol(featureSubset, propertiesIsolated)
 
-rfxg_mse, rfxg_r2 = randomTreeXGBoost(filteredData, trueValue, bestXGrfPara)
-print(f"\nXGBoost | Random Forest Regressor - MSE: {rfxg_mse:.4f}, R²: {rfxg_r2:.4f}") 
-'''
-gb_mse, gb_r2 = doGradBoost(filteredData, trueValue, bestGBPara)
-print(f"\nScikit-learn | Gradient Boosting - MSE: {gb_mse:.4f}, R²: {gb_r2:.4f}")
+            #create grid for the algorithm models
+            collectedData, propertyStr = createGrid(
+                featureSubset,
+                pd.DataFrame([f[0] for f in ml_functions]),
+                pd.DataFrame(namesAccuracy)
+            )
 
-lr_mse, lr_r2 = doLinearReg(filteredData, trueValue, propertyStr)
-print(f"\nScikit-learn | Linear Regression = MSE {lr_mse:.4f},R²: {lr_r2:.4f}")
-'''
-collectedData.iat[1,1] = rf_mse
-collectedData.iat[1,2] = rf_r2
-collectedData.iat[2,1] = rfxg_mse
-collectedData.iat[2,2] = rfxg_r2
-collectedData.iat[3,1] = gb_mse
-collectedData.iat[3,2] = gb_r2
-collectedData.iat[4,1] = lr_mse
-collectedData.iat[4,2] = lr_r2
+            #run each model
+            for modelName, modelFunc, optimiserFunc in ml_functions:
+                try:
+                    try:
+                        bestParaSaved = getParas(modelName)
+                    except FileNotFoundError:
+                        bestParaSaved = {}
 
-saveAsCSV(collectedData,f'/Users/nso/Desktop/{propertyStr}.csv')
-'''
+                    if comboID in bestParaSaved:
+                        bestParas = bestParaSaved[comboID]
+                        (f"Using saved parameters for {modelName} and combo {comboID}")
+                    elif optimiserFunc:
+                        print(f"Cannot find saved parameters for {modelName} and combo {comboID}")
+                        print("Optimising...")
+                        bestParas, _ = optimiserFunc(filteredData, trueValue)
+                        bestParaSaved[comboID] = bestParas
+                        saveParas(modelName, bestParaSaved)
+                    else:
+                        bestParas = {}
+
+                    if optimiserFunc:
+                        mse, r2 = modelFunc(filteredData, trueValue, **bestParas)
+                    else:
+                        mse, r2 = modelFunc(filteredData, trueValue, propertyStr)  #linear regression
+
+                    print(f"{modelName} - MSE: {mse:.4f}, R²: {r2:.4f}")
+
+                    summary_results = pd.concat([
+                        summary_results,
+                        pd.DataFrame([{
+                            'Features': comboID,
+                            'Model': modelName,
+                            'MSE': mse,
+                            'R²': r2
+                        }])
+                    ], ignore_index=True)
+
+                except Exception as e:
+                    print(f"Error running model {modelName} for combo {comboID}: {e}")
+
+        except KeyError as e:
+            print(f"Skipping combo {combo} due to missing column: {e}") #if user requests test for properties that are not present!!!
+        except Exception as e:
+            print(f"Error running combo {combo}: {e}")
+
+#save summary at the end
+summary_results.to_csv('/Users/nso/Desktop/summary_results.csv', index=False)
+print("Summary saved")

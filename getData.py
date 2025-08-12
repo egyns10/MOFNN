@@ -1,5 +1,6 @@
 #getData.py
 import pandas as pd
+import json
 
 def createGrid(features,names,results):
     #features: user chosen features e.g. PV, VF
@@ -38,3 +39,11 @@ def filterCol(reqData, data):
     gotCol = data.loc[:, data.columns.isin(neededCol)]
     
     return gotCol
+
+def getParas(modelName):
+    with open(f'best_{modelName}_params.json', 'r') as f:
+        return json.load(f)
+
+def saveParas(modelName, bestPara):
+    with open(f'best_{modelName}_params.json', 'w') as f:
+        json.dump(bestPara, f) 

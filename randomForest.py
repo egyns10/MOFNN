@@ -22,23 +22,28 @@ def doRandomForest(data, true, **rfParams):
     return mse, r2
 
 
-def randomTreeXGBoost(data,true, XGrfPara):
+def randomTreeXGBoost(data, true, **XGrfPara):
+    defaultPara = {
+        'n_estimators': 1,
+        'learning_rate': 1.0,
+        'max_depth': 6,
+        'colsample_bytree': 0.5,
+        'subsample': 0.5,
+        'booster': 'gbtree',
+        'objective': 'reg:squarederror',
+        'random_state': 42
+    }
+
+    #merge default with parsed parameters if there is any
+    parameters = {**defaultPara, **XGrfPara}
+
     X = data.to_numpy() 
     y = true.iloc[:, 0].to_numpy().ravel()
 
     #split data
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
     
-    model = xgb.XGBRegressor(
-        n_estimators=1,
-        learning_rate=XGrfPara.get('learning_rate', 1.0),
-        max_depth=XGrfPara.get('max_depth', 6),
-        colsample_bytree=XGrfPara.get('colsample_bytree', 0.5),
-        subsample=XGrfPara.get('subsample', 0.5),
-        random_state=42,
-        booster='gbtree',
-        objective='reg:squarederror'
-        )
+    model = xgb.XGBRegressor(**parameters)
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
 

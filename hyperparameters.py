@@ -5,6 +5,8 @@ from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.metrics import root_mean_squared_error
 import xgboost as xgb
 import numpy as np
+import warnings
+warnings.filterwarnings("ignore")  #suppresses all warnings generated within this file's code
 
 #linear regression cannot be tuned any further.
 
@@ -25,8 +27,12 @@ def optimiseGB(data, true):
 
     gbr = GradientBoostingRegressor(random_state=42)
     gridSearch = GridSearchCV(
-        estimator=gbr, param_grid=paramGrid,
-        cv=5, scoring='neg_mean_squared_error', n_jobs=-1)
+        estimator=gbr,
+        param_grid=paramGrid,
+        cv=5, scoring='neg_mean_squared_error',
+        n_jobs=-1,
+        verbose = 1
+        )
     gridSearch.fit(X_train, y_train)
 
     bestGBPara = gridSearch.best_params_
@@ -60,7 +66,7 @@ def optimiseRF(data, true):
         cv=3,                #3-fold cross validation
         n_jobs=-1,           #use all processors -> can be changed if have access to more processors
         scoring='neg_mean_squared_error',
-        verbose=2
+        verbose=1
     )
 
     gridSearch.fit(X_train, y_train)
@@ -95,7 +101,8 @@ def optimiseXGrf(data, true):
         param_grid=paramGrid,
         scoring='neg_root_mean_squared_error',
         cv=5,
-        n_jobs=-1
+        n_jobs=-1,
+        verbose = 1
     )
 
     gridSearch.fit(X_train, y_train)
