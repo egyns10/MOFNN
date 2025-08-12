@@ -32,13 +32,13 @@ def createGrid(features,names,results):
     return df,title
 
 def filterCol(reqData, data):
-    # Get the list of desired column names from name_df (assumes they are in the first row)
-    neededCol = reqData.iloc[0].tolist()
-    
-    # Filter the columns of the data_df based on those names
-    gotCol = data.loc[:, data.columns.isin(neededCol)]
-    
-    return gotCol
+    #neededCol = reqData.iloc[0].tolist()
+    #gotCol = data.loc[:, data.columns.isin(neededCol)]
+
+    #neededCol = reqData.iloc[:, 0].dropna().astype(str).str.strip().tolist()
+    #return neededCol
+
+    return data.loc[:, data.columns.isin(reqData)]
 
 def getParas(modelName):
     with open(f'best_{modelName}_params.json', 'r') as f:

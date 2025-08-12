@@ -1,8 +1,6 @@
 #hyperparameters.py
 from sklearn.model_selection import GridSearchCV, train_test_split
-from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
-from sklearn.metrics import root_mean_squared_error
 import xgboost as xgb
 import numpy as np
 import warnings
@@ -13,9 +11,6 @@ warnings.filterwarnings("ignore")  #suppresses all warnings generated within thi
 def optimiseGB(data, true):
     X = data.to_numpy()
     y = true.iloc[:, 0].to_numpy().ravel()
-
-    #split once: cross-validation will handle any training/validation sets
-    X_train, _, y_train, _ = train_test_split(X, y, test_size=0.3, random_state=42)
 
     #set up hyperparameter grid
     paramGrid = {
@@ -33,7 +28,7 @@ def optimiseGB(data, true):
         n_jobs=-1,
         verbose = 1
         )
-    gridSearch.fit(X_train, y_train)
+    gridSearch.fit(X, y)
 
     bestGBPara = gridSearch.best_params_
     bestGBScore = np.sqrt(-gridSearch.best_score_)
@@ -44,9 +39,6 @@ def optimiseGB(data, true):
 def optimiseRF(data, true):
     X = data.to_numpy()
     y = true.iloc[:, 0].to_numpy().ravel()
-
-    #split once: cross-validation will handle any training/validation sets
-    X_train, _, y_train, _ = train_test_split(X, y, test_size=0.3, random_state=42)
 
     #set up hyperparameter grid
     paramGrid = {
@@ -69,7 +61,7 @@ def optimiseRF(data, true):
         verbose=1
     )
 
-    gridSearch.fit(X_train, y_train)
+    gridSearch.fit(X, y)
 
     bestRFPara = gridSearch.best_params_
     bestRFScore = np.sqrt(-gridSearch.best_score_)  #RMSE from neg MSE
@@ -80,36 +72,34 @@ def optimiseXGrf(data, true):
     X = data.to_numpy()
     y = true.iloc[:, 0].to_numpy().ravel()
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-
     paramGrid = {
+        'n_estimators': [50, 100, 200],
         'max_depth': [3, 5, 6, 8],
         'colsample_bytree': [0.3, 0.5, 0.7],
         'subsample': [0.3, 0.5, 0.7],
         'learning_rate': [0.5, 1.0],
     }
 
-    baseModel = xgb.XGBRegressor(
-        n_estimators=1,      # single tree
+    xgrf = xgb.XGBRegressor(
         random_state=42,
         booster='gbtree',
         objective='reg:squarederror'
     )
 
     gridSearch = GridSearchCV(
-        estimator=baseModel,
+        estimator=xgrf,
         param_grid=paramGrid,
-        scoring='neg_root_mean_squared_error',
-        cv=5,
+        scoring='neg_mean_squared_error',
+        cv=3,
         n_jobs=-1,
         verbose = 1
     )
 
-    gridSearch.fit(X_train, y_train)
+    gridSearch.fit(X, y)
 
     bestXGrfPara =  gridSearch.best_params_
     bestXGrfModel =  gridSearch.best_estimator_
 
-    y_pred = bestXGrfModel.predict(X_test)
-    bestXGrfScore = root_mean_squared_error(y_test, y_pred)  #RMSE
+    y_pred = bestXGrfModel.predict(X)
+    bestXGrfScore = np.sqrt(-gridSearch.best_score_)
     return bestXGrfPara, bestXGrfScore

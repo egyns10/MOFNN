@@ -19,6 +19,7 @@ propertiesReadFile = readCSV(filepath)
 propertiesNoDup = removeDup(propertiesReadFile)
 propertiesClean = cleanData(propertiesNoDup)
 propertiesIsolated = isolateCols(propertiesClean,0,6) #takes out only the properties and nothing else - hard coded.
+propertiesIsolated.columns = propertiesIsolated.columns.astype(str).str.strip()
 #save as csv? + validate
 csvValidate(propertiesClean)
 print(propertiesIsolated[:2])
@@ -55,20 +56,18 @@ summary_results = pd.DataFrame(columns=['Features', 'Model', 'MSE', 'R²'])
 
 #headers
 features.columns = features.columns.map(str).str.strip()
-#headers = list(features.columns)
-headers = features.iloc[:, 0].dropna().astype(str).str.strip().tolist()
-
+headerNames = features.iloc[:, 0].dropna().astype(str).str.strip().tolist()
 
 #start of the big loop
 #added tqdm for progress and sanity checks
-for r_index, r in enumerate(range(1, len(headers) + 1), start=1):
-    for combo in tqdm(list(combinations(headers, r)), desc=f"Feature combos of size {r}"):
+for r_index, r in enumerate(range(1, len(headerNames) + 1), start=1):
+    for combo in tqdm(list(combinations(headerNames, r)), desc=f"Feature combos of size {r}"):
         try:
             comboID = ','.join(combo)
             print(f"\n-!!!- Running models for features: {comboID} -!!!-")
 
-            #subset DataFrame to selected features
-            featureSubset = features[list(combo)]
+            #feature subset basically acts as a contents page for headerNames, linking each name to the column index
+            featureSubset = propertiesIsolated[list(combo)]
             filteredData = filterCol(featureSubset, propertiesIsolated)
 
             #create grid for the algorithm models
@@ -91,7 +90,7 @@ for r_index, r in enumerate(range(1, len(headers) + 1), start=1):
                         (f"Using saved parameters for {modelName} and combo {comboID}")
                     elif optimiserFunc:
                         print(f"Cannot find saved parameters for {modelName} and combo {comboID}")
-                        print("Optimising...")
+                        print("Optimising hyperparameters...")
                         bestParas, _ = optimiserFunc(filteredData, trueValue)
                         bestParaSaved[comboID] = bestParas
                         saveParas(modelName, bestParaSaved)

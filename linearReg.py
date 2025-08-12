@@ -25,7 +25,8 @@ def doLinearReg(data, true, properties):
     y_pred = reg.predict(X_test)
     mse = mean_squared_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
-
+    
+    '''
     #plot true values vs predicted values
     plt.figure(figsize=(8, 6))
     plt.scatter(y_test, y_pred, color='blue', alpha=0.6, label='Predicted vs Actual')
@@ -36,7 +37,8 @@ def doLinearReg(data, true, properties):
     plt.legend()
     plt.grid()
     #plt.savefig(f"/Users/nso/Desktop/BEng/{xTitle}VS{yTitle}")
-    plt.savefig(f"/Users/nso/Desktop/BEng/{properties}")
+    plt.savefig(f"/Users/nso/Desktop/BEng2/{properties}.jpg")
     print("Figure saved")
+    '''
 
     return mse, r2
