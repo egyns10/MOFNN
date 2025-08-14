@@ -1,4 +1,5 @@
 #getData.py
+import os
 import pandas as pd
 import json
 
@@ -35,8 +36,13 @@ def filterCol(reqData, data):
     return data.loc[:, data.columns.isin(reqData)]
 
 def getParas(modelName):
-    with open(f'best_{modelName}_params.json', 'r') as f:
-        return json.load(f)
+    jsonPath = f'best_{modelName}_params.json'
+    if os.path.exists(jsonPath):
+        with open(jsonPath, 'r') as f:
+            return json.load(f)
+    else: 
+        # return empty
+        return {}
 
 def saveParas(modelName, bestPara):
     with open(f'best_{modelName}_params.json', 'w') as f:

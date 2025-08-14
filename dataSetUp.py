@@ -1,24 +1,26 @@
 #dataSetUp.py
 
-from preprocess import readCSV, removeDup, cleanData, isolateCols
+from preprocess import readCSV, removeDup, cleanData
 from validate import csvValidate
 
-def defaultTrain():
+def getTrainingFile():
     userDefaultTrain = "placeholder"
-    while userDefaultTrain != 'Y' or defaultTrain != 'N':
-        defaultTrain = input('Use default training data? Y/N')
+    while userDefaultTrain != 'Y' and userDefaultTrain != 'N':
+        userDefaultTrain = input('Use default training data? Y/N ')
         if userDefaultTrain == 'Y':
             filepathTrain = 'h2_capacity_gcmc.csv'
         elif userDefaultTrain == 'N':
             filepathTrain = input('Enter the Training Data filepath: ')
-    return userDefaultTrain, filepathTrain
+    return filepathTrain
 
 def setUpProp(filepath):
-    propertiesReadFile = readCSV(filepath)
-    propertiesNoDup = removeDup(propertiesReadFile)
+    propertiesNoDup = dedupedProp(filepath)
     propertiesClean = cleanData(propertiesNoDup)
-    propertiesIsolated = isolateCols(propertiesClean,0,6) #takes out only the properties and nothing else - hard coded.
-    propertiesIsolated.columns = propertiesIsolated.columns.astype(str).str.strip() #removes any lingering whitespaces
-    csvValidate(propertiesIsolated)
-    print(propertiesIsolated[:2])
-    return propertiesIsolated
+    propertiesClean.columns = propertiesClean.columns.astype(str).str.strip() #removes any lingering whitespaces
+    csvValidate(propertiesClean)
+    # print(propertiesClean[:2])
+    return propertiesClean
+
+def dedupedProp(filepath):
+    propertiesReadFile = readCSV(filepath)
+    return removeDup(propertiesReadFile)

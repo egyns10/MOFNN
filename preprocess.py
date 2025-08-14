@@ -3,18 +3,14 @@ import pandas as pd
 import numpy as np
 
 def readCSV(filepath):
-    readData = pd.read_csv(filepath)
-    return readData
-
+    return pd.read_csv(filepath)
 
 def removeDup(data):
-    noDup = data.drop_duplicates(keep='first').reset_index(drop=True)
-    return noDup
+    return data.drop_duplicates(keep='first').reset_index(drop=True)
 
 def cleanData(data):
     noString = data.map(lambda x: x if (isinstance(x, (int, float, np.number)) and not pd.isnull(x)) else np.nan)
-    noNull = noString.dropna(axis=1, how='all').reset_index(drop=True)
-    return noNull
+    return noString.dropna(axis=1, how='all').reset_index(drop=True)
 
 def saveAsCSV(data, filePath):
     data.to_csv(filePath, index=False)

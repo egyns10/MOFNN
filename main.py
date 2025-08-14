@@ -3,7 +3,7 @@ import pandas as pd
 from itertools import combinations
 from tqdm import tqdm
 
-from dataSetUp import defaultTrain,  setUpProp
+from dataSetUp import getTrainingFile,  setUpProp
 from randomForest import doRandomForest, randomTreeXGBoost
 from linearReg import doLinearReg
 from gradBoost import doGradBoost
@@ -15,40 +15,31 @@ from hyperparameters import optimiseRF, optimiseGB, optimiseXGrf
 
 #read in all properties from file
 
+userMultiFile = input('Do you want to use two files: one to test and the other to train? Y/N ')
+
 #check to see if training data is default provided data
 #training data is mandatory.
-userDefaultTrain, filepathTrain = defaultTrain()
+filepathTrain = getTrainingFile()
 
 #default training data is held in 'h2_capacity_gcmc.csv'
 #this is reflected in the function 
 
-userMultiFile = input('Do you want to use two files: one to test and the other to train? Y/N')
-
 if userMultiFile == 'Y':
-    filepathTrain = defaultTrain()
     filepathTest = input('Enter the filepath for the testing data: ')
     trainFile = setUpProp(filepathTrain)
     testFile = setUpProp(filepathTest)
-
-elif userMultiFile == 'N':
-    filepathTrain = defaultTrain()
-    trainFile = setUpProp(filepathTrain)
-    testFile = trainFile.copy()
-    #above was originally just testFile = setUpProp(filePathTrain) but this is much better
 else:
-    print('Invalid input. Defaulting to single file mode:')
-    filepathTrain = defaultTrain()
+    print('Using single file mode:')
     trainFile = setUpProp(filepathTrain)
     testFile = trainFile.copy()
 #all the above have outputs in pd.df
 
-
 #choose properties to use + validate
-features, max = columnChoose(trainFile)
+features = columnChoose(trainFile)
 #returns the features chosen (as pd.df) and the number of features chosen
 
 #user chooses on UG or UV
-trueValue = UGorUV(testFile)
+targetValues = UGorUV(testFile)
 
 #--------------------------
 
@@ -62,14 +53,14 @@ ml_functions = [
 namesAccuracy = ['MSE', 'R²']
 summary_results = pd.DataFrame(columns=['Features', 'Model', 'MSE', 'R²'])
 
-#headers
-features.columns = features.columns.map(str).str.strip()
-headerNames = features.iloc[0].dropna().astype(str).str.strip().tolist()
+# #headers
+# #features.columns = features.columns.map(str).str.strip()
+# features = features.iloc[0].dropna().astype(str).str.strip().tolist()
 
 #start of the big loop
 #added tqdm for progress and sanity checks
-for r_index, r in enumerate(range(1, len(headerNames) + 1), start=1):
-    for combo in tqdm(list(combinations(headerNames, r)), desc=f"Feature combos of size {r}"):
+for r_index, r in enumerate(range(1, len(features) + 1), start=1):
+    for combo in tqdm(list(combinations(features, r)), desc=f"Feature combos of size {r}"):
         try:
             comboID = ','.join(combo)
             print(f"\n-!!!- Running models for features: {comboID} -!!!-")
@@ -77,8 +68,8 @@ for r_index, r in enumerate(range(1, len(headerNames) + 1), start=1):
             #subset basically acts as a contents page for headerNames, linking each name to the column index
             trainSubset = trainFile[list(combo)]
             testSubset = testFile[list(combo)]
-            trainTarget = trueValue
-            testTarget = trueValue
+            trainTarget = targetValues
+            testTarget = targetValues
 
             #create grid for the algorithm models
             collectedData, propertyStr = createGrid(
@@ -87,50 +78,48 @@ for r_index, r in enumerate(range(1, len(headerNames) + 1), start=1):
                 pd.DataFrame(namesAccuracy)
             )
 
-            #run each model
-            for modelName, modelFunc, optimiserFunc in ml_functions:
-                try:
-                    try:
-                        bestParaSaved = getParas(modelName)
-                    except FileNotFoundError:
-                        bestParaSaved = {}
-
-                    if comboID in bestParaSaved:
-                        bestParas = bestParaSaved[comboID]
-                        (f"Using saved parameters for {modelName} and combo {comboID}")
-                    elif optimiserFunc:
-                        print(f"Cannot find saved parameters for {modelName} and combo {comboID}")
-                        print("Optimising hyperparameters...")
-                        bestParas, _ = optimiserFunc(filteredData, trueValue)
-                        bestParaSaved[comboID] = bestParas
-                        saveParas(modelName, bestParaSaved)
-                    else:
-                        bestParas = {}
-
-                    if optimiserFunc:
-                        mse, r2 = modelFunc(trainSubset, trainTarget, testSubset, testTarget, **bestParas)
-                    else:
-                        mse, r2 = modelFunc(trainSubset, trainTarget, testSubset, testTarget, propertyStr)  #linear regression
-
-                    print(f"{modelName} - MSE: {mse:.4f}, R²: {r2:.4f}")
-
-                    summary_results = pd.concat([
-                        summary_results,
-                        pd.DataFrame([{
-                            'Features': comboID,
-                            'Model': modelName,
-                            'MSE': mse,
-                            'R²': r2
-                        }])
-                    ], ignore_index=True)
-
-                except Exception as e:
-                    print(f"Error running model {modelName} for combo {comboID}: {e}")
-
         except KeyError as e:
             print(f"Skipping combo {combo} due to missing column: {e}") #if user requests test for properties that are not present!!!
         except Exception as e:
             print(f"Error running combo {combo}: {e}")
+
+        #run each model
+        for modelName, modelFunc, optimiserFunc in ml_functions:
+            bestParaSaved = getParas(modelName)
+
+            try:
+                if comboID in bestParaSaved:
+                    bestParas = bestParaSaved[comboID]
+                    print(f"Using saved parameters for {modelName} and combo {comboID}")
+                elif optimiserFunc:
+                    print(f"Cannot find saved parameters for {modelName} and combo {comboID}")
+                    print("Optimising hyperparameters...")
+                    bestParas, _ = optimiserFunc(trainFile, targetValues)
+                    bestParaSaved[comboID] = bestParas
+                    saveParas(modelName, bestParaSaved)
+                else:
+                    bestParas = {}
+
+                if optimiserFunc:
+                    mse, r2 = modelFunc(trainSubset, trainTarget, testSubset, testTarget, **bestParas)
+                else:
+                    mse, r2 = modelFunc(trainSubset, trainTarget, testSubset, testTarget, propertyStr)  #linear regression
+
+                print(f"{modelName} - MSE: {mse:.4f}, R²: {r2:.4f}")
+
+                summary_results = pd.concat([
+                    summary_results,
+                    pd.DataFrame([{
+                        'Features': comboID,
+                        'Model': modelName,
+                        'MSE': mse,
+                        'R²': r2
+                    }])
+                ], ignore_index=True)
+
+            except Exception as e:
+                print(f"Error running model {modelName} for combo {comboID}: {e}")
+
 
 #save summary at the end
 summary_results.to_csv('/Users/nso/Desktop/summary_results.csv', index=False)
