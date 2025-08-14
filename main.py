@@ -99,47 +99,5 @@ for r in range(1, len(headers) + 1):
             print(f"Error running combo {combo}: {e}")
 
 # Save summary at the end
-summary_results.to_csv('/Users/nso/Desktop/summary_results.csv', index=False)
+summary_results.to_csv('/Users/nso/Desktop/summary_results_bare.csv', index=False)
 print("Summary saved")
-'''
-
-#setup for easy data collection
-#TODO: Change this if the calculated accuracy values or the no. of algorithms are altered!
-namesML = ['SK_RF','XG_RF','SK_GB','SK_LR']
-dfNamesML = pd.DataFrame(data=namesML)
-namesAccuracy = ['MSE','R²']
-dfNamesAccuracy = pd.DataFrame(data=namesAccuracy)
-collectedData, propertyStr = createGrid(features,dfNamesML, dfNamesAccuracy)
-#print(collectedData)
-#this sets up a blank pd.df to input the r^2 and mse values fpr data collection
-
-filteredData = filterCol(features, propertiesIsolated)
-print(filteredData[:2])
-
-
-rf_mse, rf_r2 = doRandomForest(filteredData, trueValue)
-print(f"\nScikit-learn | Random Forest Regressor - MSE: {rf_mse:.4f}, R²: {rf_r2:.4f}")
-
-
-rfxg_mse, rfxg_r2 = randomTreeXGBoost(filteredData, trueValue)
-print(f"\nXGBoost | Random Forest Regressor - MSE: {rfxg_mse:.4f}, R²: {rfxg_r2:.4f}") 
-
-
-gb_mse, gb_r2 = doGradBoost(filteredData, trueValue)
-print(f"\nScikit-learn | Gradient Boosting - MSE: {gb_mse:.4f}, R²: {gb_r2:.4f}")
-
-
-lr_mse, lr_r2 = doLinearReg(filteredData, trueValue, propertyStr)
-print(f"\nScikit-learn | Linear Regression = MSE {lr_mse:.4f},R²: {lr_r2:.4f}")
-
-collectedData.iat[1,1] = rf_mse
-collectedData.iat[1,2] = rf_r2
-collectedData.iat[2,1] = rfxg_mse
-collectedData.iat[2,2] = rfxg_r2
-collectedData.iat[3,1] = gb_mse
-collectedData.iat[3,2] = gb_r2
-collectedData.iat[4,1] = lr_mse
-collectedData.iat[4,2] = lr_r2
-
-saveAsCSV(collectedData,f'/Users/nso/Desktop/{propertyStr}.csv')
-'''
