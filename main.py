@@ -56,7 +56,7 @@ summary_results = pd.DataFrame(columns=['Features', 'Model', 'MSE', 'R²'])
 
 #headers
 features.columns = features.columns.map(str).str.strip()
-headerNames = features.iloc[:, 0].dropna().astype(str).str.strip().tolist()
+headerNames = features.iloc[0].dropna().astype(str).str.strip().tolist()
 
 #start of the big loop
 #added tqdm for progress and sanity checks
