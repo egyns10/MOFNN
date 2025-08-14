@@ -32,12 +32,6 @@ def createGrid(features,names,results):
     return df,title
 
 def filterCol(reqData, data):
-    #neededCol = reqData.iloc[0].tolist()
-    #gotCol = data.loc[:, data.columns.isin(neededCol)]
-
-    #neededCol = reqData.iloc[:, 0].dropna().astype(str).str.strip().tolist()
-    #return neededCol
-
     return data.loc[:, data.columns.isin(reqData)]
 
 def getParas(modelName):

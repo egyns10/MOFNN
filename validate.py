@@ -1,14 +1,12 @@
 #validate.py
-from preprocess import saveAsCSV
+from preprocess import saveAsCSV, isolateCols
 import pandas as pd
 
 def csvValidate(data):
     csvYN = "placeholder"
-    csvYNValid = False
     while csvYN != "Y" or csvYN != "N":
         csvYN = input("Do you want to save the cleaned data as a CSV? Y/N\n")
         if csvYN == "Y" :
-            csvYN = True
             outputPath = input("Enter the path to save the new csv file to: ")
             print("\n")
             saveAsCSV(data, outputPath)
@@ -41,13 +39,22 @@ def columnChoose(data):
             print("Your value is invalid. Make sure it is in range.\n")
             return columnChoose(data)  #restart
 
-def UGorUV(UG,UV):
-    choice = input("UG or UV? ")
-    if choice != "UG" and choice != "UV" :
-        print(f"'{choice}' is not a valid column name. Try again.\n")
-        return UGorUV(UG,UV)  #restart
-    
-    if choice == "UG" :
-        return UG
-    if choice == "UV" :
-        return UV
+def UGorUV(propClean):
+    while True:
+        choice = input("UG or UV? ").strip().upper()
+        if choice in ["UG",'UV']:
+            break
+        print(f"'{choice}' is not a valid input.")
+
+    while True:
+        userColNo = input(f'What column number are the {choice} values held within the cleaned training data (zero index): ')
+        try:
+            colNumber = int(userColNo)
+            if 0 <= colNumber < propClean.shape[1]:
+                break
+            else:
+                print(f"Entered value '{colNumber} is out of bounds.")
+        except ValueError:
+            print('Invalid input. Try again')
+
+    return isolateCols(propClean,colNumber,"null")

@@ -4,18 +4,16 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 import matplotlib.pyplot as plt
 
-#def doLinearReg(data, true, xTitle, yTitle):
-def doLinearReg(data, true, properties):
+def doLinearReg(trainData, trainTarget, testData, testTarget):
     #features are stored in X
     #targets stored in y
 
     #changes the pandas df into numpy array
 
-    X = data.to_numpy() 
-    y = true.iloc[:, 0].to_numpy().ravel()
-
-    #train and tests sets made
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    X_train = trainData.to_numpy()
+    y_train = trainTarget.iloc[:, 0].to_numpy().ravel()
+    X_test = testData.to_numpy()
+    y_test = testTarget.iloc[:, 0].to_numpy().ravel()
 
     #train the model
     reg = LinearRegression()

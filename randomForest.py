@@ -4,12 +4,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 import xgboost as xgb
 
-def doRandomForest(data, true, **rfParams):
-    X = data.to_numpy() 
-    y = true.iloc[:, 0].to_numpy().ravel()
+def doRandomForest(trainData, trainTarget, testData, testTarget, **rfParams):
+    X_train = trainData.to_numpy()
+    y_train = trainTarget.iloc[:, 0].to_numpy().ravel()
+    X_test = testData.to_numpy()
+    y_test = testTarget.iloc[:, 0].to_numpy().ravel()
     #changes the pandas df into numpy array
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
     reg = RandomForestRegressor(random_state=42, **rfParams)
     reg.fit(X_train, y_train)
@@ -22,7 +22,7 @@ def doRandomForest(data, true, **rfParams):
     return mse, r2
 
 
-def randomTreeXGBoost(data, true, **XGrfPara):
+def randomTreeXGBoost(trainData, trainTarget, testData, testTarget, **XGrfPara):
     defaultPara = {
         'n_estimators': 1,
         'learning_rate': 1.0,
@@ -37,11 +37,10 @@ def randomTreeXGBoost(data, true, **XGrfPara):
     #merge default with parsed parameters if there is any
     parameters = {**defaultPara, **XGrfPara}
 
-    X = data.to_numpy() 
-    y = true.iloc[:, 0].to_numpy().ravel()
-
-    #split data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    X_train = trainData.to_numpy()
+    y_train = trainTarget.iloc[:, 0].to_numpy().ravel()
+    X_test = testData.to_numpy()
+    y_test = testTarget.iloc[:, 0].to_numpy().ravel()
     
     model = xgb.XGBRegressor(**parameters)
     model.fit(X_train, y_train)

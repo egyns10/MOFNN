@@ -3,44 +3,52 @@ import pandas as pd
 from itertools import combinations
 from tqdm import tqdm
 
-from preprocess import readCSV, removeDup, cleanData, saveAsCSV, isolateCols
+from dataSetUp import defaultTrain,  setUpProp
 from randomForest import doRandomForest, randomTreeXGBoost
 from linearReg import doLinearReg
 from gradBoost import doGradBoost
 from getData import createGrid, filterCol, getParas, saveParas
-from validate import csvValidate, columnChoose, UGorUV
+from validate import columnChoose, UGorUV
 from hyperparameters import optimiseRF, optimiseGB, optimiseXGrf
 
 #------------------------------------
 
 #read in all properties from file
-filepath = 'h2_capacity_gcmc.csv'
-propertiesReadFile = readCSV(filepath)
-propertiesNoDup = removeDup(propertiesReadFile)
-propertiesClean = cleanData(propertiesNoDup)
-propertiesIsolated = isolateCols(propertiesClean,0,6) #takes out only the properties and nothing else - hard coded.
-propertiesIsolated.columns = propertiesIsolated.columns.astype(str).str.strip()
-#save as csv? + validate
-csvValidate(propertiesClean)
-print(propertiesIsolated[:2])
 
-#read in H2 capacities from same file
-gcmcReadFile = readCSV(filepath)
-gcmcNoDup = removeDup(gcmcReadFile)
-gcmcClean = cleanData(gcmcNoDup)
-gcmcUGIsolated = isolateCols(gcmcClean,7,"null")
-gcmcUVIsolated = isolateCols(gcmcClean,8,"null")
-print(gcmcUGIsolated[:2])
+#check to see if training data is default provided data
+#training data is mandatory.
+userDefaultTrain, filepathTrain = defaultTrain()
 
-#all the above is now in pd.df form
+#default training data is held in 'h2_capacity_gcmc.csv'
+#this is reflected in the function 
+
+userMultiFile = input('Do you want to use two files: one to test and the other to train? Y/N')
+
+if userMultiFile == 'Y':
+    filepathTrain = defaultTrain()
+    filepathTest = input('Enter the filepath for the testing data: ')
+    trainFile = setUpProp(filepathTrain)
+    testFile = setUpProp(filepathTest)
+
+elif userMultiFile == 'N':
+    filepathTrain = defaultTrain()
+    trainFile = setUpProp(filepathTrain)
+    testFile = trainFile.copy()
+    #above was originally just testFile = setUpProp(filePathTrain) but this is much better
+else:
+    print('Invalid input. Defaulting to single file mode:')
+    filepathTrain = defaultTrain()
+    trainFile = setUpProp(filepathTrain)
+    testFile = trainFile.copy()
+#all the above have outputs in pd.df
 
 
 #choose properties to use + validate
-features, max = columnChoose(propertiesClean)
+features, max = columnChoose(trainFile)
 #returns the features chosen (as pd.df) and the number of features chosen
 
 #user chooses on UG or UV
-trueValue = UGorUV(gcmcUGIsolated,gcmcUVIsolated)
+trueValue = UGorUV(testFile)
 
 #--------------------------
 
@@ -66,13 +74,15 @@ for r_index, r in enumerate(range(1, len(headerNames) + 1), start=1):
             comboID = ','.join(combo)
             print(f"\n-!!!- Running models for features: {comboID} -!!!-")
 
-            #feature subset basically acts as a contents page for headerNames, linking each name to the column index
-            featureSubset = propertiesIsolated[list(combo)]
-            filteredData = filterCol(featureSubset, propertiesIsolated)
+            #subset basically acts as a contents page for headerNames, linking each name to the column index
+            trainSubset = trainFile[list(combo)]
+            testSubset = testFile[list(combo)]
+            trainTarget = trueValue
+            testTarget = trueValue
 
             #create grid for the algorithm models
             collectedData, propertyStr = createGrid(
-                featureSubset,
+                trainSubset,
                 pd.DataFrame([f[0] for f in ml_functions]),
                 pd.DataFrame(namesAccuracy)
             )
@@ -98,9 +108,9 @@ for r_index, r in enumerate(range(1, len(headerNames) + 1), start=1):
                         bestParas = {}
 
                     if optimiserFunc:
-                        mse, r2 = modelFunc(filteredData, trueValue, **bestParas)
+                        mse, r2 = modelFunc(trainSubset, trainTarget, testSubset, testTarget, **bestParas)
                     else:
-                        mse, r2 = modelFunc(filteredData, trueValue, propertyStr)  #linear regression
+                        mse, r2 = modelFunc(trainSubset, trainTarget, testSubset, testTarget, propertyStr)  #linear regression
 
                     print(f"{modelName} - MSE: {mse:.4f}, R²: {r2:.4f}")
 
