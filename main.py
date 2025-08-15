@@ -135,10 +135,10 @@ for r in range(1, len(features) + 1):
                 raise e
 
 #save summary at the end
-summaryResults.to_csv('/Users/nso/Desktop/summary_results.csv', index=False)
+summaryResults.to_csv('summary_results.csv', index=False)
 
 #remove second duplicates then convert list to pd.series and save as csv
 MOFsDF = pd.DataFrame(mofRecords).drop_duplicates(subset='MOF')
-MOFsDF.to_csv("/Users/nso/Desktop/MOFs_of_interest.csv", index=False)
+MOFsDF.to_csv("MOFs_of_interest.csv", index=False)
 
 print("Summary saved")

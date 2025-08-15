@@ -34,8 +34,8 @@ def doLinearReg(trainData, trainTarget, testData):
     plt.ylabel('Predicted Values')
     plt.legend()
     plt.grid()
-    #plt.savefig(f"/Users/nso/Desktop/BEng/{xTitle}VS{yTitle}")
-    plt.savefig(f"/Users/nso/Desktop/BEng2/{properties}.jpg")
+    #plt.savefig(f"{xTitle}VS{yTitle}")
+    plt.savefig(f"{properties}.jpg")
     print("Figure saved")
     '''
 
