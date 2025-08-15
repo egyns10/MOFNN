@@ -25,8 +25,7 @@ filepathTrain = getTrainingFile()
 #this is reflected in the function 
 
 if userMultiFile == 'Y':
-    # filepathTest = input('Enter the filepath for the testing data: ')
-    filepathTest = '/Users/nso/Desktop/New MOFs/ASR_Altered.csv'
+    filepathTest = input('Enter the filepath for the testing data: ')
     trainFile = setUpProp(filepathTrain)
     testFile = setUpProp(filepathTest)
 else:
