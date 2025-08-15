@@ -1,7 +1,7 @@
 #dataSetUp.py
 
 from preprocess import readCSV, removeDup, cleanData
-from validate import csvValidate
+from validate import saveCleanData
 
 def getTrainingFile():
     userDefaultTrain = "placeholder"
@@ -17,7 +17,7 @@ def setUpProp(filepath):
     propertiesNoDup = dedupedProp(filepath)
     propertiesClean = cleanData(propertiesNoDup)
     propertiesClean.columns = propertiesClean.columns.astype(str).str.strip() #removes any lingering whitespaces
-    csvValidate(propertiesClean)
+    saveCleanData(propertiesClean,filepath)
     # print(propertiesClean[:2])
     return propertiesClean
 

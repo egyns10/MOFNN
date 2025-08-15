@@ -32,9 +32,6 @@ def createGrid(features,names,results):
     df = pd.DataFrame(grid)
     return df,title
 
-def filterCol(reqData, data):
-    return data.loc[:, data.columns.isin(reqData)]
-
 def getParas(modelName):
     jsonPath = f'best_{modelName}_params.json'
     if os.path.exists(jsonPath):

@@ -2,19 +2,11 @@
 from preprocess import saveAsCSV, isolateCols
 import pandas as pd
 
-def csvValidate(data):
-    csvYN = "placeholder"
-    while csvYN != "Y" or csvYN != "N":
-        csvYN = input("Do you want to save the cleaned data as a CSV? Y/N\n")
+def saveCleanData(data,filepath):
+        csvYN = input(f"Do you want to save {filepath} as a cleaned data? Y/N ")
         if csvYN == "Y" :
-            outputPath = input("Enter the path to save the new csv file to: ")
-            print("\n")
+            outputPath = filepath.replace(".csv","_cleaned.csv")
             saveAsCSV(data, outputPath)
-            break
-        if csvYN == "N":
-            break
-        if csvYN != "Y" or csvYN != "N":
-            print("Invalid value, try again\n")
 
 def columnChoose(data):
     #data is cleaned data including any target value columns
@@ -41,6 +33,10 @@ def columnChoose(data):
             continue
 
 def UGorUV(propClean):
+    print(propClean.columns)
+    for i,col in enumerate(propClean.columns):
+        print(f'{i}, {col}')
+
     while True:
         choice = input("UG or UV? ").strip().upper()
         if choice in ["UG",'UV']:
@@ -58,3 +54,9 @@ def UGorUV(propClean):
             return isolateCols(propClean,colNumber,"null")
         else:
             print(f"Entered value '{colNumber} is out of bounds.")
+
+if __name__ == "__main__":
+    # csvValidate("","x.csv")
+    # pass
+    UGorUV(pd.read_csv('/Users/nso/Desktop/New MOFs/ASR_Altered.csv'))
+    

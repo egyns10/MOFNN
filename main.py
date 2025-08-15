@@ -3,11 +3,11 @@ import pandas as pd
 from itertools import combinations
 from tqdm import tqdm
 
-from dataSetUp import getTrainingFile,  setUpProp
+from dataSetUp import getTrainingFile,  setUpProp, dedupedProp
 from randomForest import doRandomForest, randomTreeXGBoost
 from linearReg import doLinearReg
 from gradBoost import doGradBoost
-from getData import createGrid, filterCol, getParas, saveParas
+from getData import createGrid, getParas, saveParas
 from validate import columnChoose, UGorUV
 from hyperparameters import optimiseRF, optimiseGB, optimiseXGrf
 
@@ -25,7 +25,8 @@ filepathTrain = getTrainingFile()
 #this is reflected in the function 
 
 if userMultiFile == 'Y':
-    filepathTest = input('Enter the filepath for the testing data: ')
+    # filepathTest = input('Enter the filepath for the testing data: ')
+    filepathTest = '/Users/nso/Desktop/New MOFs/ASR_Altered.csv'
     trainFile = setUpProp(filepathTrain)
     testFile = setUpProp(filepathTest)
 else:
@@ -39,7 +40,7 @@ features = columnChoose(trainFile)
 #returns the features chosen (as pd.df) and the number of features chosen
 
 #user chooses on UG or UV
-targetValues = UGorUV(testFile)
+targetValues = UGorUV(trainFile)
 
 #--------------------------
 
@@ -50,16 +51,17 @@ ml_functions = [
     ('SK_GB', doGradBoost, optimiseGB),
     ('SK_LR', doLinearReg, None),           #linear regression does not have any hyperparameters to be tuned.
 ]
-namesAccuracy = ['MSE', 'R²']
-summary_results = pd.DataFrame(columns=['Features', 'Model', 'MSE', 'R²'])
+
+summaryResults = pd.DataFrame(columns=['Features', 'Model', 'MSE', 'R²'])
+MOFsSeries = pd.Series(dtype='object')  #empty series
 
 # #headers
 # #features.columns = features.columns.map(str).str.strip()
-# features = features.iloc[0].dropna().astype(str).str.strip().tolist()
+# headerName = features.iloc[0].dropna().astype(str).str.strip().tolist()
 
 #start of the big loop
 #added tqdm for progress and sanity checks
-for r_index, r in enumerate(range(1, len(features) + 1), start=1):
+for r in range(1, len(features) + 1):
     for combo in tqdm(list(combinations(features, r)), desc=f"Feature combos of size {r}"):
         try:
             comboID = ','.join(combo)
@@ -70,13 +72,6 @@ for r_index, r in enumerate(range(1, len(features) + 1), start=1):
             testSubset = testFile[list(combo)]
             trainTarget = targetValues
             testTarget = targetValues
-
-            #create grid for the algorithm models
-            collectedData, propertyStr = createGrid(
-                trainSubset,
-                pd.DataFrame([f[0] for f in ml_functions]),
-                pd.DataFrame(namesAccuracy)
-            )
 
         except KeyError as e:
             print(f"Skipping combo {combo} due to missing column: {e}") #if user requests test for properties that are not present!!!
@@ -101,26 +96,51 @@ for r_index, r in enumerate(range(1, len(features) + 1), start=1):
                     bestParas = {}
 
                 if optimiserFunc:
-                    mse, r2 = modelFunc(trainSubset, trainTarget, testSubset, testTarget, **bestParas)
+                    mse, r2, bestUG, bestUV = modelFunc(trainSubset, trainTarget, testSubset, **bestParas)
                 else:
-                    mse, r2 = modelFunc(trainSubset, trainTarget, testSubset, testTarget, propertyStr)  #linear regression
-
+                    mse, r2, bestUG, bestUV = modelFunc(trainSubset, trainTarget, testSubset)  #linear regression
+                #bestUG and bestUV are a list of indices of which link MOFs of interest
                 print(f"{modelName} - MSE: {mse:.4f}, R²: {r2:.4f}")
 
-                summary_results = pd.concat([
-                    summary_results,
+                if targetValues.columns[0] == 'UG at PS':
+                    predictedValues = bestUG
+                elif targetValues.columns[0] == 'UV at PS':
+                    predictedValues = bestUV
+                else:
+                    predictedValues = []
+                    print('Could not find MOF names.')
+
+                namesTestFile = dedupedProp(filepathTest)
+                #MOFsNames = namesTestFile.columns[0]
+                newMOFs = {
+                    i: namesTestFile.at[i, 'coreid']
+                    for i in predictedValues
+                    if i in namesTestFile.index
+                }
+                MOFsSeries = pd.concat([MOFsSeries, pd.Series(newMOFs)], axis=0)
+
+
+                summaryResults = pd.concat([
+                    summaryResults,
                     pd.DataFrame([{
                         'Features': comboID,
                         'Model': modelName,
                         'MSE': mse,
                         'R²': r2
-                    }])
+                        }])
                 ], ignore_index=True)
 
             except Exception as e:
                 print(f"Error running model {modelName} for combo {comboID}: {e}")
-
+                raise e
 
 #save summary at the end
-summary_results.to_csv('/Users/nso/Desktop/summary_results.csv', index=False)
+summaryResults.to_csv('/Users/nso/Desktop/summary_results.csv', index=False)
+
+#remove second duplicates then convert list to pd.series and save as csv
+MOFsSeries = MOFsSeries[~MOFsSeries.index.duplicated(keep='first')]
+#set 'column' name (as series, only 1 col)
+MOFsSeries.name = 'MOF'
+MOFsSeries.to_csv("/Users/nso/Desktop/MOFs_of_interest.csv")
+
 print("Summary saved")
