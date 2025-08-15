@@ -28,7 +28,7 @@ def doRandomForest(trainData, trainTarget, testData, **rfParams):
     #keep a running list of any predicted UG or UV values are above the threshold
     #hard coded threshold
     #record both and pass them back to the main code where UG or UV is chosen depending on the user's prev input
-    highUG = [i for i, pred in enumerate(predictions) if pred > 35]
+    highUG = [i for i, pred in enumerate(predictions) if pred > 34]
     highUV = [i for i, pred in enumerate(predictions) if pred > 38] 
 
     return mse, r2, highUG, highUV
@@ -67,7 +67,7 @@ def randomTreeXGBoost(trainData, trainTarget, testData, **XGrfPara):
     predictData = testData.to_numpy()
     predictions = xgbModel.predict(predictData)
 
-    highUG = [i for i, pred in enumerate(predictions) if pred > 35]
+    highUG = [i for i, pred in enumerate(predictions) if pred > 34]
     highUV = [i for i, pred in enumerate(predictions) if pred > 38] 
 
     return mse, r2, highUG, highUV

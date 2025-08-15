@@ -44,7 +44,7 @@ def doLinearReg(trainData, trainTarget, testData):
     predictions = reg.predict(predictData)
     #compared to finding y_pred, this predicts UG or UV values given the testing data
 
-    highUG = [i for i, pred in enumerate(predictions) if pred > 35]
+    highUG = [i for i, pred in enumerate(predictions) if pred > 34]
     highUV = [i for i, pred in enumerate(predictions) if pred > 38] 
 
     return mse, r2, highUG, highUV
