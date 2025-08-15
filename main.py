@@ -50,9 +50,8 @@ ml_functions = [
     ('SK_GB', doGradBoost, optimiseGB),
     ('SK_LR', doLinearReg, None),           #linear regression does not have any hyperparameters to be tuned.
 ]
-
 summaryResults = pd.DataFrame(columns=['Features', 'Model', 'MSE', 'R²'])
-MOFsSeries = pd.Series(dtype='object')  #empty series
+mofRecords = []
 
 #start of the big loop
 #added tqdm for progress and sanity checks
@@ -111,8 +110,15 @@ for r in range(1, len(features) + 1):
                     for i in predictedValues
                     if i in namesTestFile.index
                 }
-                MOFsSeries = pd.concat([MOFsSeries, pd.Series(newMOFs)], axis=0)
 
+                for i in predictedValues:
+                    if i in namesTestFile.index:
+                        mofRecords.append({
+                        'MOF': namesTestFile.at[i, 'coreid'],
+                        'PredictedValue': testTarget.at[i, targetValues.columns[0]],
+                        'Model': modelName,
+                        'Features': comboID
+                        })
 
                 summaryResults = pd.concat([
                     summaryResults,
@@ -132,9 +138,7 @@ for r in range(1, len(features) + 1):
 summaryResults.to_csv('/Users/nso/Desktop/summary_results.csv', index=False)
 
 #remove second duplicates then convert list to pd.series and save as csv
-MOFsSeries = MOFsSeries[~MOFsSeries.index.duplicated(keep='first')]
-#set 'column' name (as series, only 1 col)
-MOFsSeries.name = 'MOF'
-MOFsSeries.to_csv("/Users/nso/Desktop/MOFs_of_interest.csv")
+MOFsDF = pd.DataFrame(mofRecords).drop_duplicates(subset='MOF')
+MOFsDF.to_csv("/Users/nso/Desktop/MOFs_of_interest.csv", index=False)
 
 print("Summary saved")
