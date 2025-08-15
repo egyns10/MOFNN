@@ -54,10 +54,6 @@ ml_functions = [
 summaryResults = pd.DataFrame(columns=['Features', 'Model', 'MSE', 'R²'])
 MOFsSeries = pd.Series(dtype='object')  #empty series
 
-# #headers
-# #features.columns = features.columns.map(str).str.strip()
-# headerName = features.iloc[0].dropna().astype(str).str.strip().tolist()
-
 #start of the big loop
 #added tqdm for progress and sanity checks
 for r in range(1, len(features) + 1):
@@ -110,7 +106,6 @@ for r in range(1, len(features) + 1):
                     print('Could not find MOF names.')
 
                 namesTestFile = dedupedProp(filepathTest)
-                #MOFsNames = namesTestFile.columns[0]
                 newMOFs = {
                     i: namesTestFile.at[i, 'coreid']
                     for i in predictedValues

@@ -11,7 +11,6 @@ def saveCleanData(data,filepath):
 def columnChoose(data):
     #data is cleaned data including any target value columns
     lengthData = data.shape[1]
-    colNValid = False
     max = -1
     print(*data.columns[0:7], sep=", ")
     while max>lengthData or max<0:
