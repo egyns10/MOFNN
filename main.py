@@ -7,7 +7,7 @@ from dataSetUp import getTrainingFile,  setUpProp, dedupedProp
 from randomForest import doRandomForest, randomTreeXGBoost
 from linearReg import doLinearReg
 from gradBoost import doGradBoost
-from getData import createGrid, getParas, saveParas
+from getData import getParas, saveParas
 from validate import columnChoose, UGorUV
 from hyperparameters import optimiseRF, optimiseGB, optimiseXGrf
 

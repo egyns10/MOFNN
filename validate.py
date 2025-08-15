@@ -57,6 +57,5 @@ def UGorUV(propClean):
 
 if __name__ == "__main__":
     # csvValidate("","x.csv")
-    # pass
-    UGorUV(pd.read_csv('/Users/nso/Desktop/New MOFs/ASR_Altered.csv'))
-    
+    pass
+    # UGorUV(pd.read_csv('/Users/nso/Desktop/New MOFs/ASR_Altered.csv'))
