@@ -53,8 +53,3 @@ def UGorUV(propClean):
             return isolateCols(propClean,colNumber,"null")
         else:
             print(f"Entered value '{colNumber} is out of bounds.")
-
-if __name__ == "__main__":
-    # csvValidate("","x.csv")
-    pass
-    # UGorUV(pd.read_csv('/Users/nso/Desktop/New MOFs/ASR_Altered.csv'))

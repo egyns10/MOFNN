@@ -32,15 +32,45 @@ def createGrid(features,names,results):
     df = pd.DataFrame(grid)
     return df,title
 
-def getParas(modelName):
-    jsonPath = f'best_{modelName}_params.json'
-    if os.path.exists(jsonPath):
-        with open(jsonPath, 'r') as f:
-            return json.load(f)
-    else: 
-        # return empty
+"""
+def getParas(modelName, targetProperty, combo):
+    base_dir = os.path.dirname(__file__)
+    jsonPath = os.path.join(base_dir, f'best_{modelName}_for_{targetProperty}_params.json')
+    if not os.path.exists(jsonPath):
+            return {}                   #return empty
+    with open(jsonPath, 'r') as f:
+            data = json.load(f)
+    #combo into string key
+    if isinstance(combo, tuple):
+        feature_key = ','.join(combo)
+    else:
+        feature_key = ','.join(combo.columns)
+    return data.get(feature_key, {})
+"""
+
+
+def getParas(modelName, targetProperty, combo):
+    base_dir = os.path.dirname(__file__)
+    jsonPath = os.path.join(base_dir, f'best_{modelName}_for_{targetProperty}_params.json')
+    if not os.path.exists(jsonPath):
         return {}
 
-def saveParas(modelName, bestPara):
-    with open(f'best_{modelName}_params.json', 'w') as f:
+    with open(jsonPath, 'r') as f:
+        data = json.load(f)
+
+    #extract only the needed data for this **combo** of features e.g. Density+PV only
+    if isinstance(combo, tuple):
+        feature_key = ",".join(combo)
+    else:
+        feature_key = ",".join(combo.columns)
+
+    return data.get(feature_key, {})
+
+def saveParas(modelName, bestPara, targetProperty):
+    with open(f'best_{modelName}_for_{targetProperty}_params.json', 'w') as f:
         json.dump(bestPara, f) 
+
+if '__name__' == '__main__':
+    modelName = 'SK_GB'
+    targetProperty = 'UV'
+    features = 'Density'

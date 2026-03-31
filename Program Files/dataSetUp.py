@@ -8,7 +8,7 @@ def getTrainingFile():
     while userDefaultTrain != 'Y' and userDefaultTrain != 'N':
         userDefaultTrain = input('Use default training data? Y/N ')
         if userDefaultTrain == 'Y':
-            filepathTrain = 'h2_capacity_gcmc.csv'
+            filepathTrain = 'Databases/h2_capacity_gcmc.csv'
         elif userDefaultTrain == 'N':
             filepathTrain = input('Enter the Training Data filepath: ')
     return filepathTrain

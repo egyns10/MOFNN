@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 from dataSetUp import getTrainingFile,  setUpProp, dedupedProp
 from randomForest import doRandomForest, randomTreeXGBoost
-from linearReg import doLinearReg
+from linearReg import doLinearReg, doSGDReg
 from gradBoost import doGradBoost
 from getData import getParas, saveParas
 from validate import columnChoose, UGorUV
@@ -29,7 +29,7 @@ if userMultiFile == 'Y':
     trainFile = setUpProp(filepathTrain)
     testFile = setUpProp(filepathTest)
 else:
-    print('Using single file mode:')
+    print('Switching to single file mode...')
     trainFile = setUpProp(filepathTrain)
     testFile = trainFile.copy()
 #all the above have outputs in pd.df
@@ -45,17 +45,18 @@ targetValues = UGorUV(trainFile)
 
 #initialising set up
 ml_functions = [
-    ('SK_RF', doRandomForest, optimiseRF),
-    ('XG_RF', randomTreeXGBoost, optimiseXGrf),
-    ('SK_GB', doGradBoost, optimiseGB),
-    ('SK_LR', doLinearReg, None),           #linear regression does not have any hyperparameters to be tuned.
+    #('SK_RF', doRandomForest, optimiseRF),
+    #('XG_RF', randomTreeXGBoost, optimiseXGrf),
+    #('SK_GB', doGradBoost, optimiseGB),
+    ('SK_LR', doLinearReg, None),                   #linear regression does not have any hyperparameters to be tuned.
+    ('SK_SGD', doSGDReg, None)
 ]
 summaryResults = pd.DataFrame(columns=['Features', 'Model', 'MSE', 'R²'])
 mofRecords = []
 
 #start of the big loop
 #added tqdm for progress and sanity checks
-for r in range(1, len(features) + 1):
+for r in range(1, len(features) +1):
     for combo in tqdm(list(combinations(features, r)), desc=f"Feature combos of size {r}"):
         try:
             comboID = ','.join(combo)
@@ -74,20 +75,28 @@ for r in range(1, len(features) + 1):
 
         #run each model
         for modelName, modelFunc, optimiserFunc in ml_functions:
-            bestParaSaved = getParas(modelName)
 
+            #TODO: This repeats again below - change so it's modular
+            if targetValues.columns[0] == 'UG at PS':
+                targetProperty = 'UG'
+            elif targetValues.columns[0] == 'UV at PS':
+                targetProperty = 'UV'
+
+
+            
             try:
-                if comboID in bestParaSaved:
-                    bestParas = bestParaSaved[comboID]
-                    print(f"Using saved parameters for {modelName} and combo {comboID}")
+
+                bestParas = getParas(modelName, targetProperty, combo)
+
+                if bestParas:
+                    print(f"Using saved parameters for {comboID}")
                 elif optimiserFunc:
                     print(f"Cannot find saved parameters for {modelName} and combo {comboID}")
                     print("Optimising hyperparameters...")
                     bestParas, _ = optimiserFunc(trainFile, targetValues)
-                    bestParaSaved[comboID] = bestParas
-                    saveParas(modelName, bestParaSaved)
+                    saveParas(modelName, {comboID: bestParas}, targetProperty)
                 else:
-                    bestParas = {}
+                    bestParas = {}  #here for linear regression models which do not need tuned hyperparameters
 
                 if optimiserFunc:
                     mse, r2, bestUG, bestUV = modelFunc(trainSubset, trainTarget, testSubset, **bestParas)
@@ -104,7 +113,7 @@ for r in range(1, len(features) + 1):
                     predictedValues = []
                     print('Could not find MOF names.')
 
-                namesTestFile = dedupedProp(filepathTest)
+                namesTestFile = dedupedProp(testFile)
                 newMOFs = {
                     i: namesTestFile.at[i, 'coreid']
                     for i in predictedValues
@@ -135,10 +144,15 @@ for r in range(1, len(features) + 1):
                 raise e
 
 #save summary at the end
+#summary-user_filepath = input("Where would you like to save the summary file to? ")
+#summaryResults.to_csv(summary-user_filepath, index=False)
 summaryResults.to_csv('/Users/nso/Desktop/summary_results.csv', index=False)
 
 #remove second duplicates then convert list to pd.series and save as csv
 MOFsDF = pd.DataFrame(mofRecords).drop_duplicates(subset='MOF')
+
+#MOFs_of_interest-user_filepath = input("Where would you like to save the file MOFs_of_interest to? ")
+#MOFsDF.to_csv(MOFs_of_interest-user_filepath, index=False)
 MOFsDF.to_csv("/Users/nso/Desktop/MOFs_of_interest.csv", index=False)
 
 print("Summary saved")
