@@ -1,5 +1,5 @@
 #linearReg.py
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, SGDRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 import matplotlib.pyplot as plt
@@ -43,6 +43,34 @@ def doLinearReg(trainData, trainTarget, testData):
     predictData = testData.to_numpy()
     predictions = reg.predict(predictData)
     #compared to finding y_pred, this predicts UG or UV values given the testing data
+
+    highUG = [i for i, pred in enumerate(predictions) if pred > 35]
+    highUV = [i for i, pred in enumerate(predictions) if pred > 38] 
+
+    return mse, r2, highUG, highUV
+
+def doSGDReg(trainData, trainTarget, testData):
+    #train
+
+    #features are stored in X
+    #targets stored in y
+    #changes the pandas df into numpy array
+    X = trainData.to_numpy() 
+    y = trainTarget.iloc[:, 0].to_numpy().ravel()
+    #changes the pandas df into numpy array
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+    SGDReg = SGDRegressor()
+    SGDReg.fit(X_train, y_train)
+
+    y_pred = SGDReg.predict(X_test)
+    mse = mean_squared_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+
+    #predict
+    predictData = testData.to_numpy()
+    predictions = SGDReg.predict(predictData)
 
     highUG = [i for i, pred in enumerate(predictions) if pred > 35]
     highUV = [i for i, pred in enumerate(predictions) if pred > 38] 
