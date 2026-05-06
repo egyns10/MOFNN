@@ -1,7 +1,7 @@
 #gradBoost.py
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import root_mean_squared_error, r2_score
 
 def doGradBoost(trainData, trainTarget, testData,**gbParams):
     #train
@@ -19,7 +19,7 @@ def doGradBoost(trainData, trainTarget, testData,**gbParams):
     gbr.fit(X_train, y_train)
 
     y_pred = gbr.predict(X_test)
-    mse = mean_squared_error(y_test, y_pred)
+    rmse = root_mean_squared_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
 
     #predict
@@ -29,4 +29,4 @@ def doGradBoost(trainData, trainTarget, testData,**gbParams):
     highUG = [i for i, pred in enumerate(predictions) if pred > 35]
     highUV = [i for i, pred in enumerate(predictions) if pred > 38] 
 
-    return mse, r2, highUG, highUV
+    return rmse, r2, highUG, highUV

@@ -1,7 +1,7 @@
 #random_forest.py
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import root_mean_squared_error, r2_score
 from scipy.stats import pearsonr
 import xgboost as xgb
 
@@ -18,7 +18,7 @@ def doRandomForest(trainData, trainTarget, testData, **rfParams):
     reg.fit(X_train, y_train)
     y_pred = reg.predict(X_test)
 
-    mse = mean_squared_error(y_test, y_pred)
+    rmse = root_mean_squared_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
 
     #now we can make predictions of the training data
@@ -31,7 +31,7 @@ def doRandomForest(trainData, trainTarget, testData, **rfParams):
     highUG = [i for i, pred in enumerate(predictions) if pred > 35]
     highUV = [i for i, pred in enumerate(predictions) if pred > 38] 
 
-    return mse, r2, highUG, highUV
+    return rmse, r2, highUG, highUV
 
 
 def randomTreeXGBoost(trainData, trainTarget, testData, **XGrfPara):
@@ -60,7 +60,7 @@ def randomTreeXGBoost(trainData, trainTarget, testData, **XGrfPara):
     xgbModel.fit(X_train, y_train)
     y_pred = xgbModel.predict(X_test)
 
-    mse = mean_squared_error(y_test, y_pred)
+    rmse = root_mean_squared_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
 
     #predict
@@ -70,4 +70,4 @@ def randomTreeXGBoost(trainData, trainTarget, testData, **XGrfPara):
     highUG = [i for i, pred in enumerate(predictions) if pred > 35]
     highUV = [i for i, pred in enumerate(predictions) if pred > 38] 
 
-    return mse, r2, highUG, highUV
+    return rmse, r2, highUG, highUV

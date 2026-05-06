@@ -51,7 +51,7 @@ ml_functions = [
     ('SK_LR', doLinearReg, None),                   #linear regression does not have any hyperparameters to be tuned.
     ('SK_SGD', doSGDReg, None)
 ]
-summaryResults = pd.DataFrame(columns=['Features', 'Model', 'MSE', 'R²'])
+summaryResults = pd.DataFrame(columns=['Features', 'Model', 'RMSE', 'R²'])
 mofRecords = []
 
 #start of the big loop
@@ -99,11 +99,11 @@ for r in range(1, len(features) +1):
                     bestParas = {}  #here for linear regression models which do not need tuned hyperparameters
 
                 if optimiserFunc:
-                    mse, r2, bestUG, bestUV = modelFunc(trainSubset, trainTarget, testSubset, **bestParas)
+                    rmse, r2, bestUG, bestUV = modelFunc(trainSubset, trainTarget, testSubset, **bestParas)
                 else:
-                    mse, r2, bestUG, bestUV = modelFunc(trainSubset, trainTarget, testSubset)  #linear regression
+                    rmse, r2, bestUG, bestUV = modelFunc(trainSubset, trainTarget, testSubset)  #linear regression
                 #bestUG and bestUV are a list of indices of which link MOFs of interest
-                print(f"{modelName} - MSE: {mse:.4f}, R²: {r2:.4f}")
+                print(f"{modelName} -   RMSE: {rmse:.4f}, R²: {r2:.4f}")
 
                 if targetValues.columns[0] == 'UG at PS':
                     predictedValues = bestUG
@@ -134,7 +134,7 @@ for r in range(1, len(features) +1):
                     pd.DataFrame([{
                         'Features': comboID,
                         'Model': modelName,
-                        'MSE': mse,
+                        'RMSE': rmse,
                         'R²': r2
                         }])
                 ], ignore_index=True)

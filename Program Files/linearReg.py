@@ -1,7 +1,7 @@
 #linearReg.py
 from sklearn.linear_model import LinearRegression, SGDRegressor
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import root_mean_squared_error, r2_score
 import matplotlib.pyplot as plt
 
 def doLinearReg(trainData, trainTarget, testData):
@@ -21,7 +21,7 @@ def doLinearReg(trainData, trainTarget, testData):
 
     #run the algo and find the error
     y_pred = reg.predict(X_test)
-    mse = mean_squared_error(y_test, y_pred)
+    rmse = root_mean_squared_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
 
     '''
@@ -47,7 +47,7 @@ def doLinearReg(trainData, trainTarget, testData):
     highUG = [i for i, pred in enumerate(predictions) if pred > 35]
     highUV = [i for i, pred in enumerate(predictions) if pred > 38] 
 
-    return mse, r2, highUG, highUV
+    return rmse, r2, highUG, highUV
 
 def doSGDReg(trainData, trainTarget, testData):
     #train
@@ -65,7 +65,7 @@ def doSGDReg(trainData, trainTarget, testData):
     SGDReg.fit(X_train, y_train)
 
     y_pred = SGDReg.predict(X_test)
-    mse = mean_squared_error(y_test, y_pred)
+    rmse = root_mean_squared_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
 
     #predict
@@ -75,4 +75,4 @@ def doSGDReg(trainData, trainTarget, testData):
     highUG = [i for i, pred in enumerate(predictions) if pred > 35]
     highUV = [i for i, pred in enumerate(predictions) if pred > 38] 
 
-    return mse, r2, highUG, highUV
+    return rmse, r2, highUG, highUV
