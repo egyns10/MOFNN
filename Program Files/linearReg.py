@@ -24,6 +24,10 @@ def doLinearReg(trainData, trainTarget, testData):
     rmse = root_mean_squared_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
 
+    #feature importance (coefficients)
+    importance = dict(zip(trainData.columns, reg.coef_))
+    sortedImportance = sorted(importance.items(), key=lambda x: abs(x[1]), reverse=True)
+
     '''
     #plots true values vs predicted values (all based on training data e.g. how close the algo got)
     plt.figure(figsize=(8, 6))
@@ -47,7 +51,7 @@ def doLinearReg(trainData, trainTarget, testData):
     highUG = [i for i, pred in enumerate(predictions) if pred > 35]
     highUV = [i for i, pred in enumerate(predictions) if pred > 38] 
 
-    return rmse, r2, highUG, highUV
+    return rmse, r2, highUG, highUV, sortedImportance
 
 def doSGDReg(trainData, trainTarget, testData):
     #train
@@ -68,6 +72,10 @@ def doSGDReg(trainData, trainTarget, testData):
     rmse = root_mean_squared_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
 
+    #feature importance (coefficients)
+    importance = dict(zip(trainData.columns, SGDReg.coef_))
+    sortedImportance = sorted(importance.items(), key=lambda x: abs(x[1]), reverse=True)
+
     #predict
     predictData = testData.to_numpy()
     predictions = SGDReg.predict(predictData)
@@ -75,4 +83,4 @@ def doSGDReg(trainData, trainTarget, testData):
     highUG = [i for i, pred in enumerate(predictions) if pred > 35]
     highUV = [i for i, pred in enumerate(predictions) if pred > 38] 
 
-    return rmse, r2, highUG, highUV
+    return rmse, r2, highUG, highUV, sortedImportance

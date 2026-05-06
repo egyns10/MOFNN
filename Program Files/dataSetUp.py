@@ -21,6 +21,9 @@ def setUpProp(filepath):
     # print(propertiesClean[:2])
     return propertiesClean
 
-def dedupedProp(filepath):
-    propertiesReadFile = readCSV(filepath)
+def dedupedProp(data):
+    if isinstance(data, str):
+        propertiesReadFile = readCSV(data)
+    else:
+        propertiesReadFile = data
     return removeDup(propertiesReadFile)

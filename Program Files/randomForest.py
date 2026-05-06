@@ -21,6 +21,10 @@ def doRandomForest(trainData, trainTarget, testData, **rfParams):
     rmse = root_mean_squared_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
 
+    # Feature importance
+    importance = dict(zip(trainData.columns, reg.feature_importances_))
+    sortedImportance = sorted(importance.items(), key=lambda x: x[1], reverse=True)
+
     #now we can make predictions of the training data
     predictData = testData.to_numpy()
     predictions = reg.predict(predictData)
@@ -31,7 +35,7 @@ def doRandomForest(trainData, trainTarget, testData, **rfParams):
     highUG = [i for i, pred in enumerate(predictions) if pred > 35]
     highUV = [i for i, pred in enumerate(predictions) if pred > 38] 
 
-    return rmse, r2, highUG, highUV
+    return rmse, r2, highUG, highUV, sortedImportance
 
 
 def randomTreeXGBoost(trainData, trainTarget, testData, **XGrfPara):
@@ -63,6 +67,10 @@ def randomTreeXGBoost(trainData, trainTarget, testData, **XGrfPara):
     rmse = root_mean_squared_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
 
+    # Feature importance
+    importance = dict(zip(trainData.columns, xgbModel.feature_importances_))
+    sortedImportance = sorted(importance.items(), key=lambda x: x[1], reverse=True)
+
     #predict
     predictData = testData.to_numpy()
     predictions = xgbModel.predict(predictData)
@@ -70,4 +78,4 @@ def randomTreeXGBoost(trainData, trainTarget, testData, **XGrfPara):
     highUG = [i for i, pred in enumerate(predictions) if pred > 35]
     highUV = [i for i, pred in enumerate(predictions) if pred > 38] 
 
-    return rmse, r2, highUG, highUV
+    return rmse, r2, highUG, highUV, sortedImportance

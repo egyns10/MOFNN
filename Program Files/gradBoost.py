@@ -22,6 +22,10 @@ def doGradBoost(trainData, trainTarget, testData,**gbParams):
     rmse = root_mean_squared_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
 
+    #feature importance
+    importance = dict(zip(trainData.columns, gbr.feature_importances_))
+    sortedImportance = sorted(importance.items(), key=lambda x: x[1], reverse=True)
+
     #predict
     predictData = testData.to_numpy()
     predictions = gbr.predict(predictData)
@@ -29,4 +33,4 @@ def doGradBoost(trainData, trainTarget, testData,**gbParams):
     highUG = [i for i, pred in enumerate(predictions) if pred > 35]
     highUV = [i for i, pred in enumerate(predictions) if pred > 38] 
 
-    return rmse, r2, highUG, highUV
+    return rmse, r2, highUG, highUV, sortedImportance

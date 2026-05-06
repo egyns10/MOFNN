@@ -10,6 +10,7 @@ from gradBoost import doGradBoost
 from getData import getParas, saveParas
 from validate import columnChoose, UGorUV
 from hyperparameters import optimiseRF, optimiseGB, optimiseXGrf
+from preprocess import selectMLFunctions, imputeMissingValues
 
 #------------------------------------
 
@@ -34,6 +35,9 @@ else:
     testFile = trainFile.copy()
 #all the above have outputs in pd.df
 
+#impute missing values in test data
+testFile = imputeMissingValues(testFile)
+
 #choose properties to use + validate
 features = columnChoose(trainFile)
 #returns the features chosen (as pd.df) and the number of features chosen
@@ -44,15 +48,10 @@ targetValues = UGorUV(trainFile)
 #--------------------------
 
 #initialising set up
-ml_functions = [
-    #('SK_RF', doRandomForest, optimiseRF),
-    #('XG_RF', randomTreeXGBoost, optimiseXGrf),
-    #('SK_GB', doGradBoost, optimiseGB),
-    ('SK_LR', doLinearReg, None),                   #linear regression does not have any hyperparameters to be tuned.
-    ('SK_SGD', doSGDReg, None)
-]
+ml_functions = selectMLFunctions()
 summaryResults = pd.DataFrame(columns=['Features', 'Model', 'RMSE', 'R²'])
 mofRecords = []
+importanceRecords = []
 
 #start of the big loop
 #added tqdm for progress and sanity checks
@@ -99,9 +98,9 @@ for r in range(1, len(features) +1):
                     bestParas = {}  #here for linear regression models which do not need tuned hyperparameters
 
                 if optimiserFunc:
-                    rmse, r2, bestUG, bestUV = modelFunc(trainSubset, trainTarget, testSubset, **bestParas)
+                    rmse, r2, bestUG, bestUV, importance = modelFunc(trainSubset, trainTarget, testSubset, **bestParas)
                 else:
-                    rmse, r2, bestUG, bestUV = modelFunc(trainSubset, trainTarget, testSubset)  #linear regression
+                    rmse, r2, bestUG, bestUV, importance = modelFunc(trainSubset, trainTarget, testSubset)  #linear regression
                 #bestUG and bestUV are a list of indices of which link MOFs of interest
                 print(f"{modelName} -   RMSE: {rmse:.4f}, R²: {r2:.4f}")
 
@@ -113,9 +112,9 @@ for r in range(1, len(features) +1):
                     predictedValues = []
                     print('Could not find MOF names.')
 
-                namesTestFile = dedupedProp(testFile)
+                namesTestFile = dedupedProp(filepathTrain)  #use original file
                 newMOFs = {
-                    i: namesTestFile.at[i, 'coreid']
+                    i: namesTestFile.at[i, 'Names'] #names = coreid
                     for i in predictedValues
                     if i in namesTestFile.index
                 }
@@ -123,7 +122,7 @@ for r in range(1, len(features) +1):
                 for i in predictedValues:
                     if i in namesTestFile.index:
                         mofRecords.append({
-                        'MOF': namesTestFile.at[i, 'coreid'],
+                        'MOF': namesTestFile.at[i, 'Names'],    #names = coreid
                         'PredictedValue': testTarget.at[i, targetValues.columns[0]],
                         'Model': modelName,
                         'Features': comboID
@@ -138,6 +137,13 @@ for r in range(1, len(features) +1):
                         'R²': r2
                         }])
                 ], ignore_index=True)
+
+                # Collect feature importance
+                importanceRecords.append({
+                    'Model': modelName,
+                    'Features': comboID,
+                    'Importance': importance
+                })
 
             except Exception as e:
                 print(f"Error running model {modelName} for combo {comboID}: {e}")
@@ -154,5 +160,10 @@ MOFsDF = pd.DataFrame(mofRecords).drop_duplicates(subset='MOF')
 #MOFs_of_interest-user_filepath = input("Where would you like to save the file MOFs_of_interest to? ")
 #MOFsDF.to_csv(MOFs_of_interest-user_filepath, index=False)
 MOFsDF.to_csv("/Users/nso/Desktop/MOFs_of_interest.csv", index=False)
+
+#save feature importance
+with open('/Users/nso/Desktop/feature_importance.txt', 'w') as f:
+    for record in importanceRecords:
+        f.write(f"{record['Model']}, {', '.join([feat for feat, imp in record['Importance']])}\n")
 
 print("Summary saved")
