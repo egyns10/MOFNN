@@ -50,6 +50,7 @@ def UGorUV(propClean):
             print('Invalid input. Try again')
             continue
         if 0 <= colNumber < propClean.shape[1]:
-            return isolateCols(propClean,colNumber,"null")
+            column_name = propClean.columns[colNumber]
+            return choice, column_name, isolateCols(propClean,colNumber,"null")
         else:
-            print(f"Entered value '{colNumber} is out of bounds.")
+            print(f"Entered value '{colNumber}' is out of bounds.")

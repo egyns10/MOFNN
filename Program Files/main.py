@@ -10,7 +10,7 @@ from gradBoost import doGradBoost
 from getData import getParas, saveParas
 from validate import columnChoose, UGorUV
 from hyperparameters import optimiseRF, optimiseGB, optimiseXGrf
-from preprocess import selectMLFunctions, imputeMissingValues
+from preprocess import selectMLFunctions, imputeMissingValues, isolateCols, saveFeatureImportance
 
 #------------------------------------
 
@@ -43,7 +43,13 @@ features = columnChoose(trainFile)
 #returns the features chosen (as pd.df) and the number of features chosen
 
 #user chooses on UG or UV
-targetValues = UGorUV(trainFile)
+targetProperty, targetColumn, trainTarget = UGorUV(trainFile)
+if userMultiFile == 'Y' and targetColumn in testFile.columns:
+    testTarget = isolateCols(testFile, testFile.columns.get_loc(targetColumn), "null")
+else:
+    testTarget = trainTarget if userMultiFile == 'N' else None
+    #this basically splits a file if the user has only one file
+        #if the user has no target column then we affirm that testTarget is None and use predictions (instead of recording the MOFs of interest)
 
 #--------------------------
 
@@ -64,8 +70,6 @@ for r in range(1, len(features) +1):
             #subset basically acts as a contents page for headerNames, linking each name to the column index
             trainSubset = trainFile[list(combo)]
             testSubset = testFile[list(combo)]
-            trainTarget = targetValues
-            testTarget = targetValues
 
         except KeyError as e:
             print(f"Skipping combo {combo} due to missing column: {e}") #if user requests test for properties that are not present!!!
@@ -74,15 +78,6 @@ for r in range(1, len(features) +1):
 
         #run each model
         for modelName, modelFunc, optimiserFunc in ml_functions:
-
-            #TODO: This repeats again below - change so it's modular
-            if targetValues.columns[0] == 'UG at PS':
-                targetProperty = 'UG'
-            elif targetValues.columns[0] == 'UV at PS':
-                targetProperty = 'UV'
-
-
-            
             try:
 
                 bestParas = getParas(modelName, targetProperty, combo)
@@ -92,21 +87,21 @@ for r in range(1, len(features) +1):
                 elif optimiserFunc:
                     print(f"Cannot find saved parameters for {modelName} and combo {comboID}")
                     print("Optimising hyperparameters...")
-                    bestParas, _ = optimiserFunc(trainFile, targetValues)
+                    bestParas, _ = optimiserFunc(trainFile, trainTarget)
                     saveParas(modelName, {comboID: bestParas}, targetProperty)
                 else:
                     bestParas = {}  #here for linear regression models which do not need tuned hyperparameters
 
                 if optimiserFunc:
-                    rmse, r2, bestUG, bestUV, importance = modelFunc(trainSubset, trainTarget, testSubset, **bestParas)
+                    rmse, r2, bestUG, bestUV, importance, predictions = modelFunc(trainSubset, trainTarget, testSubset, **bestParas)
                 else:
-                    rmse, r2, bestUG, bestUV, importance = modelFunc(trainSubset, trainTarget, testSubset)  #linear regression
+                    rmse, r2, bestUG, bestUV, importance, predictions = modelFunc(trainSubset, trainTarget, testSubset)  #linear regression
                 #bestUG and bestUV are a list of indices of which link MOFs of interest
                 print(f"{modelName} -   RMSE: {rmse:.4f}, R²: {r2:.4f}")
 
-                if targetValues.columns[0] == 'UG at PS':
+                if targetProperty == 'UG':
                     predictedValues = bestUG
-                elif targetValues.columns[0] == 'UV at PS':
+                elif targetProperty == 'UV':
                     predictedValues = bestUV
                 else:
                     predictedValues = []
@@ -114,18 +109,24 @@ for r in range(1, len(features) +1):
 
                 namesTestFile = dedupedProp(filepathTrain)  #use original file
                 newMOFs = {
-                    i: namesTestFile.at[i, 'Names'] #names = coreid
+                    i: namesTestFile.at[i, 'Name']
                     for i in predictedValues
                     if i in namesTestFile.index
                 }
 
                 for i in predictedValues:
                     if i in namesTestFile.index:
+                        predicted_value = None
+                        if testTarget is not None:
+                            predicted_value = testTarget.at[i, targetColumn]
+                        else:
+                            predicted_value = predictions[i]
+
                         mofRecords.append({
-                        'MOF': namesTestFile.at[i, 'Names'],    #names = coreid
-                        'PredictedValue': testTarget.at[i, targetValues.columns[0]],
-                        'Model': modelName,
-                        'Features': comboID
+                            'MOF': namesTestFile.at[i, 'Name'],
+                            'PredictedValue': predicted_value,
+                            'Model': modelName,
+                            'Features': comboID
                         })
 
                 summaryResults = pd.concat([
@@ -162,8 +163,6 @@ MOFsDF = pd.DataFrame(mofRecords).drop_duplicates(subset='MOF')
 MOFsDF.to_csv("/Users/nso/Desktop/MOFs_of_interest.csv", index=False)
 
 #save feature importance
-with open('/Users/nso/Desktop/feature_importance.txt', 'w') as f:
-    for record in importanceRecords:
-        f.write(f"{record['Model']}, {', '.join([feat for feat, imp in record['Importance']])}\n")
+saveFeatureImportance(importanceRecords, '/Users/nso/Desktop/feature_importance.txt')
 
 print("Summary saved")

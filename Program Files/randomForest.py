@@ -35,7 +35,7 @@ def doRandomForest(trainData, trainTarget, testData, **rfParams):
     highUG = [i for i, pred in enumerate(predictions) if pred > 35]
     highUV = [i for i, pred in enumerate(predictions) if pred > 38] 
 
-    return rmse, r2, highUG, highUV, sortedImportance
+    return rmse, r2, highUG, highUV, sortedImportance, predictions
 
 
 def randomTreeXGBoost(trainData, trainTarget, testData, **XGrfPara):
@@ -78,4 +78,4 @@ def randomTreeXGBoost(trainData, trainTarget, testData, **XGrfPara):
     highUG = [i for i, pred in enumerate(predictions) if pred > 35]
     highUV = [i for i, pred in enumerate(predictions) if pred > 38] 
 
-    return rmse, r2, highUG, highUV, sortedImportance
+    return rmse, r2, highUG, highUV, sortedImportance, predictions

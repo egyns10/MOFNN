@@ -35,6 +35,15 @@ def imputeMissingValues(data):
     imputed = pd.DataFrame(imputer.fit_transform(data), columns=data.columns)
     return imputed
 
+def saveFeatureImportance(records, filePath):
+    """
+    Save feature importance records to a text file, listing features in descending importance.
+    """
+    with open(filePath, 'w') as f:
+        for record in records:
+            features_string = ', '.join([feat for feat, _ in record['Importance']])
+            f.write(f"{record['Model']}, {features_string}\n")
+
 def selectMLFunctions():
     available_models = [
         ('SK_RF', 'Scikit-learn Random Forest'),
@@ -63,6 +72,10 @@ def selectMLFunctions():
                     selected.append(idx)
         except ValueError:
             print("Invalid input. Please enter numbers separated by commas.")
+
+    if not selected:
+        print("No models selected; defaulting to all available models.")
+        selected = [i for i in range(len(available_models))]
     
     # Import here to avoid circular imports
     from randomForest import doRandomForest, randomTreeXGBoost

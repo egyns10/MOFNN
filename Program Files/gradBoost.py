@@ -33,4 +33,4 @@ def doGradBoost(trainData, trainTarget, testData,**gbParams):
     highUG = [i for i, pred in enumerate(predictions) if pred > 35]
     highUV = [i for i, pred in enumerate(predictions) if pred > 38] 
 
-    return rmse, r2, highUG, highUV, sortedImportance
+    return rmse, r2, highUG, highUV, sortedImportance, predictions

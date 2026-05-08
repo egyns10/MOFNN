@@ -51,7 +51,7 @@ def doLinearReg(trainData, trainTarget, testData):
     highUG = [i for i, pred in enumerate(predictions) if pred > 35]
     highUV = [i for i, pred in enumerate(predictions) if pred > 38] 
 
-    return rmse, r2, highUG, highUV, sortedImportance
+    return rmse, r2, highUG, highUV, sortedImportance, predictions
 
 def doSGDReg(trainData, trainTarget, testData):
     #train
@@ -83,4 +83,4 @@ def doSGDReg(trainData, trainTarget, testData):
     highUG = [i for i, pred in enumerate(predictions) if pred > 35]
     highUV = [i for i, pred in enumerate(predictions) if pred > 38] 
 
-    return rmse, r2, highUG, highUV, sortedImportance
+    return rmse, r2, highUG, highUV, sortedImportance, predictions
